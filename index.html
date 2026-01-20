@@ -1,0 +1,3666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OreX</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%234F46E5;stop-opacity:1' /><stop offset='100%25' style='stop-color:%237C3AED;stop-opacity:1' /></linearGradient></defs><circle cx='50' cy='50' r='48' fill='url(%23grad)'/><path d='M50 20 L60 30 L55 30 L55 45 L60 45 L50 55 L40 45 L45 45 L45 30 L40 30 Z' fill='white' opacity='0.9'/><circle cx='50' cy='65' r='8' fill='white' opacity='0.9'/><circle cx='30' cy='40' r='6' fill='white' opacity='0.7'/><circle cx='70' cy='40' r='6' fill='white' opacity='0.7'/><path d='M35 70 Q50 75 65 70' stroke='white' stroke-width='3' fill='none' opacity='0.8'/></svg>">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>  
+        * { 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }    
+        
+        :root {  
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --dark-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --accent-blue: #4F46E5;
+            --accent-purple: #7C3AED;
+            --accent-pink: #EC4899;
+            --accent-cyan: #06B6D4;
+            --success-green: #10B981;
+            --warning-orange: #F59E0B;
+            --danger-red: #EF4444;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 40px rgba(79, 70, 229, 0.4);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(79, 70, 229, 0.03) 2px,
+                    rgba(79, 70, 229, 0.03) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+        }
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 50px 30px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(124, 58, 237, 0.15));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 50px;
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .header p {
+            font-size: 1.15em;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .system-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .status-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .status-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .status-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            border-color: rgba(79, 70, 229, 0.4);
+        }
+        
+        .status-card h3 {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .status-value {
+            font-size: 2.75em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .status-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+            font-weight: 400;
+        }
+        .robot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 28px;
+            margin-bottom: 40px;
+        }
+        
+        .robot-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .robot-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.1), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        
+        .robot-card:hover::after {
+            opacity: 1;
+        }
+        
+        .robot-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-lg), 0 0 50px rgba(79, 70, 229, 0.3);
+            border-color: rgba(79, 70, 229, 0.5);
+        }
+        
+        .robot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .robot-id {
+            font-size: 1.35em;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
+        .robot-status {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.7em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: statusPulse 2s infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .status-operational { 
+            background: linear-gradient(135deg, var(--success-green), #059669);
+            color: white;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+        .status-warning { 
+            background: linear-gradient(135deg, var(--warning-orange), #D97706);
+            color: white;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+        }
+        .status-critical { 
+            background: linear-gradient(135deg, var(--danger-red), #DC2626);
+            color: white;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+            animation: criticalBlink 1s infinite;
+        }
+        .status-maintenance { 
+            background: linear-gradient(135deg, var(--accent-purple), #6D28D9);
+            color: white;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .status-optimizing { 
+            background: linear-gradient(135deg, var(--accent-cyan), #0891B2);
+            color: white;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+            animation: optimizingPulse 1.5s infinite;
+        }
+        
+        @keyframes optimizingPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 25px rgba(6, 182, 212, 0.6); }
+        }
+        
+        @keyframes criticalBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .metric-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        
+        .metric {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.05));
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+        
+        .metric:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(124, 58, 237, 0.08));
+            transform: translateX(4px);
+        }
+        
+        .metric:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+        
+        .metric-label {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .failure-probability {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            border-radius: 16px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .failure-probability::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--danger-red), transparent);
+            animation: scanLine 2s infinite;
+        }
+        
+        @keyframes scanLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .probability-bar {
+            height: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-green) 0%, var(--warning-orange) 50%, var(--danger-red) 100%);
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px currentColor;
+            position: relative;
+        }
+        
+        .probability-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmerBar 2s infinite;
+        }
+        
+        @keyframes shimmerBar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .charts-section {
+            margin-bottom: 40px;
+        }
+        
+        .chart-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 32px;
+            border-radius: 24px;
+            margin-bottom: 28px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s ease;
+        }
+        
+        .chart-container:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(79, 70, 229, 0.3);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chart-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 4px;
+        }
+        
+        .robot-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .robot-selector-btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(124, 58, 237, 0.1));
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .robot-selector-btn:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.3), rgba(124, 58, 237, 0.2));
+            color: #ffffff;
+            border-color: rgba(79, 70, 229, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .robot-selector-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #ffffff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+        .tasks-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 32px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .tasks-section h2 {
+            margin-bottom: 24px;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.6em;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.04));
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .task-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+        
+        .task-item:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.06));
+            transform: translateX(8px);
+            border-color: rgba(79, 70, 229, 0.3);
+        }
+        
+        .task-item:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+        
+        .task-info { 
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .task-title {
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        
+        .task-details {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+        
+        .task-priority {
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .optimize-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent-cyan), #0891B2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            margin-left: 12px;
+        }
+        
+        .optimize-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .optimize-btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .optimize-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
+        }
+        
+        .optimize-btn:active {
+            transform: translateY(0);
+        }
+        
+        .optimize-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #6B7280, #4B5563);
+        }
+        
+        .optimize-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .task-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .priority-low { 
+            background: linear-gradient(135deg, var(--success-green), #059669);
+            color: white;
+        }
+        .priority-medium { 
+            background: linear-gradient(135deg, var(--warning-orange), #D97706);
+            color: white;
+        }
+        .priority-high { 
+            background: linear-gradient(135deg, #F97316, #EA580C);
+            color: white;
+        }
+        .priority-critical { 
+            background: linear-gradient(135deg, var(--danger-red), #DC2626);
+            color: white;
+            animation: priorityPulse 2s infinite;
+        }
+        
+        @keyframes priorityPulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.7); }
+        }
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .control-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(79, 70, 229, 0.5);
+        }
+        
+        .control-btn:active { 
+            transform: translateY(-2px);
+        }
+        
+        .control-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .control-btn.stop {
+            background: linear-gradient(135deg, var(--danger-red), #DC2626);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .control-btn.stop:hover { 
+            box-shadow: 0 12px 35px rgba(239, 68, 68, 0.5);
+        }
+        
+        .alert {
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            font-weight: 600;
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: alertPulse 2s infinite;
+        }
+        
+        @keyframes alertPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        
+        .alert-success { 
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            color: #D1FAE5;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .alert-success::before {
+            background: var(--success-green);
+        }
+        
+        .alert-warning { 
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+            color: #FEF3C7;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        
+        .alert-warning::before {
+            background: var(--warning-orange);
+        }
+        
+        .alert-danger { 
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            color: #FEE2E2;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .alert-danger::before {
+            background: var(--danger-red);
+        }
+        
+        @keyframes slideIn {
+            from { 
+                transform: translateX(-100%) scale(0.8);
+                opacity: 0;
+            }
+            to { 
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .pulse { 
+            animation: cardPulse 2s infinite;
+        }
+        
+        @keyframes cardPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: var(--shadow-md), 0 0 0 rgba(239, 68, 68, 0);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: var(--shadow-lg), 0 0 30px rgba(239, 68, 68, 0.6);
+            }
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85em;
+            margin-top: 32px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        /* ML Models Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, rgba(15, 12, 41, 0.95), rgba(36, 36, 62, 0.95));
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg), 0 0 60px rgba(79, 70, 229, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            padding: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, rgba(15, 12, 41, 0.98), rgba(36, 36, 62, 0.98));
+            backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+        
+        .modal-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .modal-close {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.2));
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .ml-models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .ml-model-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ml-model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            transition: transform 0.3s ease;
+        }
+        
+        .ml-model-card.random-forest::before {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+        
+        .ml-model-card.lstm::before {
+            background: linear-gradient(90deg, #3B82F6, #2563EB);
+        }
+        
+        .ml-model-card.xgboost::before {
+            background: linear-gradient(90deg, #F59E0B, #D97706);
+        }
+        
+        .ml-model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(79, 70, 229, 0.4);
+        }
+        
+        .ml-model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .ml-model-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .ml-model-status {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.7em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-active {
+            background: linear-gradient(135deg, var(--success-green), #059669);
+            color: white;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+            animation: statusPulse 2s infinite;
+        }
+        
+        .ml-metric {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.05));
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .ml-metric-label {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+        
+        .ml-metric-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .ml-metric-bar {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .ml-metric-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .ml-metric-fill.green { background: linear-gradient(90deg, var(--success-green), #059669); }
+        .ml-metric-fill.blue { background: linear-gradient(90deg, var(--accent-blue), #2563EB); }
+        .ml-metric-fill.orange { background: linear-gradient(90deg, var(--warning-orange), #D97706); }
+        
+        .ml-parameters {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ml-parameters-title {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .ml-param {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.85em;
+        }
+        
+        .ml-param-name {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .ml-param-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        .ml-output-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .ml-output-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .ml-output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .ml-output-item {
+            background: rgba(79, 70, 229, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+        }
+        
+        .ml-output-label {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+        
+        .ml-output-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .more-info-btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(124, 58, 237, 0.1));
+            color: #ffffff;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .more-info-btn:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.3), rgba(124, 58, 237, 0.2));
+            border-color: rgba(79, 70, 229, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container { padding: 15px; }
+            .header h1 { font-size: 2.2em; }
+            .header p { font-size: 1em; }
+            .system-status, .robot-grid { grid-template-columns: 1fr; }
+            .controls { 
+                justify-content: center;
+                width: 100%;
+            }
+            .control-btn {
+                flex: 1;
+                min-width: 140px;
+            }
+            .ml-models-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal-content {
+                max-height: 95vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-badge">⚡OreX</div>
+                <h1>Optimize the Ore Experience</h1>
+                <p>Extract Intelligence. Power Efficiency</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="startSystem()"><span>🚀 Start System</span></button>
+            <button class="control-btn stop" onclick="stopSystem()"><span>🛑 Stop System</span></button>
+            <button class="control-btn" onclick="generateReport()"><span>📊 Generate Report</span></button>
+        </div>
+
+        <div id="alerts"></div>
+
+       
+
+        <div class="system-status">
+            <div class="status-card">
+                <h3>System Status</h3>
+                <div class="status-value" id="systemStatus">⚪ OFFLINE</div>
+                <div class="status-label">Awaiting Start</div>
+            </div>
+            <div class="status-card">
+                <h3>Total Robots</h3>
+                <div class="status-value" id="totalRobots">3</div>
+                <div class="status-label">Registered Units</div>
+            </div>
+            <div class="status-card">
+                <h3>Ore Hardness</h3>
+                <div class="status-value" id="oreHardness">7.2 <span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">Mohs</span></div>
+                <div class="status-label">Real-time Monitoring</div>
+            </div>
+            <div class="status-card">
+                <h3>Moisture Content</h3>
+                <div class="status-value" id="moistureContent">8.5<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">%</span></div>
+                <div class="status-label">Real-time Monitoring</div>
+            </div>
+            <div class="status-card">
+                <h3>Energy Efficiency</h3>
+                <div class="status-value" id="energyEfficiency">87.3<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">%</span></div>
+                <div class="status-label">System-wide Average</div>
+            </div>
+            <div class="status-card">
+                <h3>IoT Sensors</h3>
+                <div class="status-value" id="iotSensors">24<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">/24</span></div>
+                <div class="status-label">Active Connections</div>
+            </div>
+        </div>
+
+        <div class="robot-grid" id="robotGrid">
+            </div>
+
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title" id="sensorChartTitle">Real-time Sensor Data (ROBOT_001)</div>
+                    <div class="robot-selector">
+                        <button class="robot-selector-btn active" onclick="selectRobot('ROBOT_001')" id="btn-ROBOT_001">ROBOT_001</button>
+                        <button class="robot-selector-btn" onclick="selectRobot('ROBOT_002')" id="btn-ROBOT_002">ROBOT_002</button>
+                        <button class="robot-selector-btn" onclick="selectRobot('ROBOT_003')" id="btn-ROBOT_003">ROBOT_003</button>
+                    </div>
+                </div>
+                <canvas id="sensorChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Failure Probability Trends</div>
+                <canvas id="failureChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📊 Energy Consumption & Efficiency Analytics</div>
+                <canvas id="energyChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">🔬 ML Model Predictions vs Actual</div>
+                    <button class="more-info-btn" onclick="openMLModelsModal()">📊 More Info - ML Models</button>
+                </div>
+                <canvas id="mlPredictionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Digital Twin & Process Simulation Section -->
+        <div class="chart-container" style="margin-bottom: 40px;">
+            <div class="chart-header">
+                <div class="chart-title">🔄 Digital Twin - Advanced Process Simulation</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="more-info-btn" onclick="toggleComparisonMode()">📊 Compare Scenarios</button>
+                    <button class="more-info-btn" onclick="exportSimulationReport()">📥 Export Report</button>
+                    <button class="more-info-btn" onclick="resetSimulation()">🔄 Reset</button>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.05)); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <h4 style="color: #fff; margin-bottom: 16px; font-size: 1em;">⚙️ Manual Parameter Adjustment</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                    <div>
+                        <label style="color: rgba(255,255,255,0.7); font-size: 0.85em; display: block; margin-bottom: 6px;">
+                            Feed Rate: <span id="dt-feed-rate-val" style="color: #fff; font-weight: 700;">100</span> t/h
+                        </label>
+                        <input type="range" min="50" max="150" value="100" id="dt-feed-rate" oninput="updateDigitalTwinParam('feedRate', this.value)" style="width: 100%; accent-color: #10B981;">
+                    </div>
+                    <div>
+                        <label style="color: rgba(255,255,255,0.7); font-size: 0.85em; display: block; margin-bottom: 6px;">
+                            Crusher Gap: <span id="dt-crusher-gap-val" style="color: #fff; font-weight: 700;">25</span> mm
+                        </label>
+                        <input type="range" min="15" max="35" value="25" id="dt-crusher-gap" oninput="updateDigitalTwinParam('crusherGap', this.value)" style="width: 100%; accent-color: #4F46E5;">
+                    </div>
+                    <div>
+                        <label style="color: rgba(255,255,255,0.7); font-size: 0.85em; display: block; margin-bottom: 6px;">
+                            Mill Fill Level: <span id="dt-mill-fill-val" style="color: #fff; font-weight: 700;">35</span>%
+                        </label>
+                        <input type="range" min="25" max="45" value="35" id="dt-mill-fill" oninput="updateDigitalTwinParam('millFill', this.value)" style="width: 100%; accent-color: #7C3AED;">
+                    </div>
+                    <div>
+                        <label style="color: rgba(255,255,255,0.7); font-size: 0.85em; display: block; margin-bottom: 6px;">
+                            Ore Hardness: <span id="dt-ore-hardness-val" style="color: #fff; font-weight: 700;">7.2</span> Mohs
+                        </label>
+                        <input type="range" min="5" max="9" step="0.1" value="7.2" id="dt-ore-hardness" oninput="updateDigitalTwinParam('oreHardness', this.value)" style="width: 100%; accent-color: #F59E0B;">
+                    </div>
+                </div>
+                <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button onclick="applyToRealSystem()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1)); color: #10B981; font-weight: 600; cursor: pointer; font-size: 0.85em;">
+                        ✅ Apply to Real System
+                    </button>
+                    <button onclick="scheduleSimulation()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(124, 58, 237, 0.1)); color: #7C3AED; font-weight: 600; cursor: pointer; font-size: 0.85em;">
+                        📅 Schedule Implementation
+                    </button>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-top: 24px;">
+                <!-- Enhanced Crushing Circuit Digital Twin -->
+                <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.05)); padding: 24px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <h3 style="color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 1.2em; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">⚙️</span> Crushing Circuit Twin
+                        </span>
+                        <span style="font-size: 0.7em; color: rgba(255,255,255,0.6); padding: 4px 12px; background: rgba(16, 185, 129, 0.2); border-radius: 20px;" id="twin-status">🟢 SYNCED</span>
+                    </h3>
+                    
+                    <div id="crushingCircuitSvg" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative;">
+                        <!-- Simulation Speed Control -->
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 8px; display: flex; gap: 8px; align-items: center;">
+                            <span style="color: rgba(255,255,255,0.7); font-size: 0.75em;">Speed:</span>
+                            <button onclick="setSimulationSpeed(0.5)" style="padding: 4px 8px; background: rgba(79, 70, 229, 0.3); border: 1px solid rgba(79, 70, 229, 0.5); color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.75em;">0.5x</button>
+                            <button onclick="setSimulationSpeed(1)" style="padding: 4px 8px; background: rgba(79, 70, 229, 0.3); border: 1px solid rgba(79, 70, 229, 0.5); color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.75em;">1x</button>
+                            <button onclick="setSimulationSpeed(2)" style="padding: 4px 8px; background: rgba(79, 70, 229, 0.3); border: 1px solid rgba(79, 70, 229, 0.5); color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.75em;">2x</button>
+                        </div>
+                        
+                        <svg viewBox="0 0 450 350" style="width: 100%; height: auto;">
+                            <!-- Feed Input with Animation -->
+                            <rect x="10" y="30" width="70" height="50" fill="rgba(16, 185, 129, 0.3)" stroke="#10B981" stroke-width="2" rx="5"/>
+                            <text x="45" y="55" fill="#10B981" font-size="12" text-anchor="middle" font-weight="bold">FEED IN</text>
+                            <text x="45" y="70" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle" id="dt-feed-display">100 t/h</text>
+                            <!-- Particles flowing -->
+                            <circle cx="60" cy="55" r="3" fill="#10B981" opacity="0.6">
+                                <animate attributeName="cx" values="60;110;110" dur="2s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.6;0.6;0" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- Flow Arrow -->
+                            <path d="M 80 55 L 115 55" stroke="#fff" stroke-width="2" marker-end="url(#arrowhead)">
+                                <animate attributeName="stroke-opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
+                            </path>
+                            
+                            <!-- Primary Crusher with Enhanced Details -->
+                            <rect x="115" y="20" width="90" height="70" fill="rgba(79, 70, 229, 0.3)" stroke="#4F46E5" stroke-width="2" rx="5"/>
+                            <text x="160" y="40" fill="#fff" font-size="12" text-anchor="middle" font-weight="bold">CRUSHER</text>
+                            <text x="160" y="55" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle" id="crusher-speed-display">100 RPM</text>
+                            <text x="160" y="67" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle">Gap: <tspan id="crusher-gap-display">25mm</tspan></text>
+                            <text x="160" y="78" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle">Pwr: <tspan id="crusher-power-display" fill="#F59E0B">24kW</tspan></text>
+                            <!-- Animated crusher jaws -->
+                            <circle cx="160" cy="50" r="18" fill="none" stroke="#7C3AED" stroke-width="2" opacity="0.5">
+                                <animateTransform attributeName="transform" type="rotate" from="0 160 50" to="360 160 50" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <rect x="148" y="42" width="4" height="16" fill="#4F46E5" opacity="0.7">
+                                <animate attributeName="opacity" values="0.7;0.3;0.7" dur="0.5s" repeatCount="indefinite"/>
+                            </rect>
+                            <rect x="168" y="42" width="4" height="16" fill="#4F46E5" opacity="0.7">
+                                <animate attributeName="opacity" values="0.3;0.7;0.3" dur="0.5s" repeatCount="indefinite"/>
+                            </rect>
+                            
+                            <!-- Flow Arrow -->
+                            <path d="M 205 55 L 240 55" stroke="#fff" stroke-width="2" marker-end="url(#arrowhead)">
+                                <animate attributeName="stroke-opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"/>
+                            </path>
+                            
+                            <!-- Grinding Mill with Enhanced Details -->
+                            <circle cx="300" cy="55" r="40" fill="rgba(124, 58, 237, 0.3)" stroke="#7C3AED" stroke-width="2"/>
+                            <text x="300" y="45" fill="#fff" font-size="12" text-anchor="middle" font-weight="bold">MILL</text>
+                            <text x="300" y="60" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle" id="mill-speed-display">95 RPM</text>
+                            <text x="300" y="72" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle">Fill: <tspan id="mill-fill-display">35%</tspan></text>
+                            <text x="300" y="82" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle">Pwr: <tspan id="mill-power-display" fill="#F59E0B">29kW</tspan></text>
+                            <!-- Animated grinding media -->
+                            <circle cx="300" cy="55" r="28" fill="none" stroke="#EC4899" stroke-width="2" opacity="0.4">
+                                <animateTransform attributeName="transform" type="rotate" from="0 300 55" to="360 300 55" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="290" cy="50" r="4" fill="#EC4899" opacity="0.6">
+                                <animateTransform attributeName="transform" type="rotate" from="0 300 55" to="360 300 55" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="310" cy="60" r="4" fill="#EC4899" opacity="0.6">
+                                <animateTransform attributeName="transform" type="rotate" from="0 300 55" to="360 300 55" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- Flow Arrow -->
+                            <path d="M 340 55 L 375 55" stroke="#fff" stroke-width="2" marker-end="url(#arrowhead)">
+                                <animate attributeName="stroke-opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                            </path>
+                            
+                            <!-- Output -->
+                            <rect x="375" y="30" width="60" height="50" fill="rgba(236, 72, 153, 0.3)" stroke="#EC4899" stroke-width="2" rx="5"/>
+                            <text x="405" y="52" fill="#EC4899" font-size="11" text-anchor="middle" font-weight="bold">OUTPUT</text>
+                            <text x="405" y="68" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle" id="dt-output-display">245 t/h</text>
+                            
+                            <!-- Energy Flow Visualization -->
+                            <text x="10" y="120" fill="rgba(255,255,255,0.7)" font-size="11" font-weight="bold">⚡ Energy Flow:</text>
+                            <rect x="10" y="130" width="425" height="18" fill="rgba(0,0,0,0.3)" rx="9"/>
+                            <rect x="10" y="130" width="0" height="18" fill="url(#energyGradient)" rx="9" id="energy-flow-bar">
+                                <animate attributeName="width" values="0;425;0" dur="4s" repeatCount="indefinite"/>
+                            </rect>
+                            <text x="220" y="142" fill="#fff" font-size="10" text-anchor="middle" id="energy-flow-text">53.8 kW</text>
+                            
+                            <!-- Real-time Metrics Grid -->
+                            <rect x="10" y="165" width="425" height="135" fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.1)" stroke-width="1" rx="8"/>
+                            <text x="20" y="185" fill="#fff" font-size="11" font-weight="bold">📊 Real-time Process Metrics:</text>
+                            
+                            <!-- Left Column -->
+                            <text x="20" y="205" fill="rgba(255,255,255,0.8)" font-size="10">Throughput: <tspan id="dt-throughput" fill="#10B981" font-weight="bold">245 t/h</tspan></text>
+                            <text x="20" y="225" fill="rgba(255,255,255,0.8)" font-size="10">Energy Use: <tspan id="dt-energy" fill="#F59E0B" font-weight="bold">53.8 kW</tspan></text>
+                            <text x="20" y="245" fill="rgba(255,255,255,0.8)" font-size="10">Efficiency: <tspan id="dt-efficiency" fill="#06B6D4" font-weight="bold">87.3%</tspan></text>
+                            <text x="20" y="265" fill="rgba(255,255,255,0.8)" font-size="10">P80 Size: <tspan id="dt-particle" fill="#7C3AED" font-weight="bold">42 mm</tspan></text>
+                            <text x="20" y="285" fill="rgba(255,255,255,0.8)" font-size="10">Recovery: <tspan id="dt-recovery" fill="#10B981" font-weight="bold">94.2%</tspan></text>
+                            
+                            <!-- Right Column -->
+                            <text x="235" y="205" fill="rgba(255,255,255,0.8)" font-size="10">Material Load: <tspan id="dt-load" fill="#EC4899" font-weight="bold">78%</tspan></text>
+                            <text x="235" y="225" fill="rgba(255,255,255,0.8)" font-size="10">Temperature: <tspan id="dt-temp" fill="#EF4444" font-weight="bold">82°C</tspan></text>
+                            <text x="235" y="245" fill="rgba(255,255,255,0.8)" font-size="10">Vibration: <tspan id="dt-vibration" fill="#F59E0B" font-weight="bold">0.24 G</tspan></text>
+                            <text x="235" y="265" fill="rgba(255,255,255,0.8)" font-size="10">Noise Level: <tspan id="dt-noise" fill="#06B6D4" font-weight="bold">78 dB</tspan></text>
+                            <text x="235" y="285" fill="rgba(255,255,255,0.8)" font-size="10">Water Usage: <tspan id="dt-water" fill="#3B82F6" font-weight="bold">12 m³/h</tspan></text>
+                            
+                            <!-- Active Scenario Indicator -->
+                            <rect x="10" y="310" width="425" height="35" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="1.5" rx="6"/>
+                            <text x="20" y="328" fill="#10B981" font-size="10" font-weight="bold">🎯 Active Scenario:</text>
+                            <text x="130" y="328" fill="#fff" font-size="11" font-weight="bold" id="active-scenario">Standard Operation</text>
+                            
+                            <!-- Gradient Definitions -->
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                    <polygon points="0 0, 10 3, 0 6" fill="#fff"/>
+                                </marker>
+                                <linearGradient id="energyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#EF4444;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <button onclick="runSimulationScenario('energy-saving')" class="scenario-btn" style="padding: 10px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1)); color: #10B981; font-weight: 600; cursor: pointer; font-size: 0.85em; transition: all 0.3s;">
+                            ⚡ Energy Saving
+                        </button>
+                        <button onclick="runSimulationScenario('high-throughput')" class="scenario-btn" style="padding: 10px; border-radius: 10px; border: 1px solid rgba(124, 58, 237, 0.3); background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.1)); color: #7C3AED; font-weight: 600; cursor: pointer; font-size: 0.85em; transition: all 0.3s;">
+                            🚀 High Throughput
+                        </button>
+                        <button onclick="runSimulationScenario('wear-reduction')" class="scenario-btn" style="padding: 10px; border-radius: 10px; border: 1px solid rgba(6, 182, 212, 0.3); background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.1)); color: #06B6D4; font-weight: 600; cursor: pointer; font-size: 0.85em; transition: all 0.3s;">
+                            🛡️ Wear Reduction
+                        </button>
+                        <button onclick="runSimulationScenario('quality-focused')" class="scenario-btn" style="padding: 10px; border-radius: 10px; border: 1px solid rgba(236, 72, 153, 0.3); background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(236, 72, 153, 0.1)); color: #EC4899; font-weight: 600; cursor: pointer; font-size: 0.85em; transition: all 0.3s;">
+                            💎 Quality Focused
+                        </button>
+                    </div>
+                    
+                    <!-- Prediction Timeline -->
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin-bottom: 8px;">📈 12-Hour Prediction:</div>
+                        <canvas id="predictionTimeline" width="400" height="80"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Simulation Results & Analytics -->
+                <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)); padding: 24px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <h3 style="color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 1.2em; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5em;">📊</span> Advanced Analytics & Insights
+                    </h3>
+                    
+                    <div id="simulation-insights" style="display: grid; gap: 12px;">
+                        <div style="background: rgba(79, 70, 229, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #4F46E5;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Energy Savings Potential</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="energy-savings">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="energy-savings-value">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #10B981;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Throughput Change</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="throughput-change">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="throughput-value">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #F59E0B;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Wear Reduction</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="wear-reduction">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="wear-lifetime">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(236, 72, 153, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #EC4899;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Product Quality</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="quality-score">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="quality-grade">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(6, 182, 212, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #06B6D4;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">ROI Estimate</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="roi-estimate">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="payback-period">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 14px; border-radius: 12px; border-left: 3px solid #7C3AED;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Implementation Risk</div>
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div style="color: #fff; font-size: 1.4em; font-weight: 700; font-family: 'Space Grotesk', sans-serif;" id="implementation-risk">-</div>
+                                <div style="color: rgba(255,255,255,0.5); font-size: 0.75em;" id="risk-factors">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Recommendation -->
+                    <div style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(79, 70, 229, 0.2);">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span>💡</span> AI Recommendation:
+                        </div>
+                        <div style="color: #fff; font-size: 0.95em; line-height: 1.6;" id="ai-recommendation">Run a simulation scenario to get AI-powered recommendations for process optimization.</div>
+                    </div>
+                    
+                    <!-- Environmental Impact -->
+                    <div style="margin-top: 16px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <div style="color: #10B981; font-size: 0.85em; margin-bottom: 8px; font-weight: 600;">🌱 Environmental Impact:</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85em;">
+                            <div style="color: rgba(255,255,255,0.8);">CO₂ Reduction: <span id="co2-reduction" style="color: #10B981; font-weight: 700;">-</span></div>
+                            <div style="color: rgba(255,255,255,0.8);">Water Saved: <span id="water-saved" style="color: #06B6D4; font-weight: 700;">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scenario Comparison Chart -->
+                    <div style="margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin-bottom: 12px;">📊 Scenario Comparison:</div>
+                        <canvas id="scenarioComparisonChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tasks-section">
+            <h2>🔧 Maintenance Tasks</h2>
+            <div id="tasksList">
+                </div>
+        </div>
+
+        <div class="timestamp">
+            Last Updated: <span id="lastUpdated"></span>
+        </div>
+    </div>
+
+    <!-- ML Models Information Modal -->
+    <div class="modal-overlay" id="mlModelsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🧠 ML Models Performance & Real-time Analytics</div>
+                <button class="modal-close" onclick="closeMLModelsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="ml-models-grid">
+                    <!-- Random Forest Model -->
+                    <div class="ml-model-card random-forest">
+                        <div class="ml-model-header">
+                            <div class="ml-model-name">🌲 Random Forest</div>
+                            <div class="ml-model-status status-active">ACTIVE</div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Accuracy</div>
+                            <div class="ml-metric-value" id="rf-accuracy">96.8%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill green" id="rf-accuracy-bar" style="width: 96.8%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Precision</div>
+                            <div class="ml-metric-value" id="rf-precision">94.2%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill green" id="rf-precision-bar" style="width: 94.2%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Recall</div>
+                            <div class="ml-metric-value" id="rf-recall">95.5%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill green" id="rf-recall-bar" style="width: 95.5%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-parameters">
+                            <div class="ml-parameters-title">Training Parameters</div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">n_estimators</span>
+                                <span class="ml-param-value" id="rf-estimators">500</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">max_depth</span>
+                                <span class="ml-param-value" id="rf-depth">25</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">min_samples_split</span>
+                                <span class="ml-param-value">10</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Training Samples</span>
+                                <span class="ml-param-value" id="rf-samples">12,450</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Features</span>
+                                <span class="ml-param-value">18</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- LSTM Model -->
+                    <div class="ml-model-card lstm">
+                        <div class="ml-model-header">
+                            <div class="ml-model-name">🔄 LSTM Network</div>
+                            <div class="ml-model-status status-active">ACTIVE</div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Accuracy</div>
+                            <div class="ml-metric-value" id="lstm-accuracy">93.4%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill blue" id="lstm-accuracy-bar" style="width: 93.4%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">MAE (Mean Absolute Error)</div>
+                            <div class="ml-metric-value" id="lstm-mae">0.047</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill blue" id="lstm-mae-bar" style="width: 95.3%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Prediction Confidence</div>
+                            <div class="ml-metric-value" id="lstm-confidence">91.8%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill blue" id="lstm-confidence-bar" style="width: 91.8%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-parameters">
+                            <div class="ml-parameters-title">Training Parameters</div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">LSTM Units</span>
+                                <span class="ml-param-value" id="lstm-units">128</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Layers</span>
+                                <span class="ml-param-value">3</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Sequence Length</span>
+                                <span class="ml-param-value" id="lstm-sequence">50</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Epochs</span>
+                                <span class="ml-param-value" id="lstm-epochs">200</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">Batch Size</span>
+                                <span class="ml-param-value">64</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- XGBoost Model -->
+                    <div class="ml-model-card xgboost">
+                        <div class="ml-model-header">
+                            <div class="ml-model-name">⚡ XGBoost</div>
+                            <div class="ml-model-status status-active">ACTIVE</div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">Accuracy</div>
+                            <div class="ml-metric-value" id="xgb-accuracy">97.3%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill orange" id="xgb-accuracy-bar" style="width: 97.3%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">F1 Score</div>
+                            <div class="ml-metric-value" id="xgb-f1">96.1%</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill orange" id="xgb-f1-bar" style="width: 96.1%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-metric">
+                            <div class="ml-metric-label">AUC-ROC</div>
+                            <div class="ml-metric-value" id="xgb-auc">0.982</div>
+                            <div class="ml-metric-bar">
+                                <div class="ml-metric-fill orange" id="xgb-auc-bar" style="width: 98.2%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-parameters">
+                            <div class="ml-parameters-title">Training Parameters</div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">n_estimators</span>
+                                <span class="ml-param-value" id="xgb-estimators">1000</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">max_depth</span>
+                                <span class="ml-param-value" id="xgb-depth">8</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">learning_rate</span>
+                                <span class="ml-param-value">0.05</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">subsample</span>
+                                <span class="ml-param-value">0.8</span>
+                            </div>
+                            <div class="ml-param">
+                                <span class="ml-param-name">colsample_bytree</span>
+                                <span class="ml-param-value">0.8</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Real-time Output Section -->
+                <div class="ml-output-section">
+                    <div class="ml-output-title">📡 Real-time Model Outputs</div>
+                    <div class="ml-output-grid">
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">Random Forest Prediction</div>
+                            <div class="ml-output-value" id="rf-output">68.4%</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">LSTM Prediction</div>
+                            <div class="ml-output-value" id="lstm-output">71.2%</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">XGBoost Prediction</div>
+                            <div class="ml-output-value" id="xgb-output">69.8%</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">Ensemble Average</div>
+                            <div class="ml-output-value" id="ensemble-output">69.8%</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">RF Feature Importance</div>
+                            <div class="ml-output-value" id="rf-feature">Temp: 32%</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">LSTM Loss</div>
+                            <div class="ml-output-value" id="lstm-loss">0.0342</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">XGB Tree Count</div>
+                            <div class="ml-output-value" id="xgb-trees">847</div>
+                        </div>
+                        <div class="ml-output-item">
+                            <div class="ml-output-label">Prediction Latency</div>
+                            <div class="ml-output-value" id="ml-latency">12ms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // System state
+            let systemRunning = false;
+            let updateInterval;
+            let sensorChart;
+            let failureChart;
+            let energyChart;
+            let mlPredictionChart;
+            let selectedRobotId = 'ROBOT_001'; // Track which robot is being displayed
+            
+            // Mining equipment control parameters
+            let crusherSpeed = 100;
+            let grindingMediaSize = 50;
+            let millRotationSpeed = 95;
+            let autoOptimizationEnabled = false;
+            let energyOptimizationTarget = 'balanced';
+            
+            // Digital Twin & Process Simulation
+            let currentSimulationScenario = 'standard';
+            
+            // IoT Sensor simulation
+            let iotSensors = {
+                active: 24,
+                total: 24,
+                oreHardness: 7.2,
+                moistureContent: 8.5
+            };
+            
+            // Store historical data for each robot
+            const robotChartData = {
+                'ROBOT_001': { labels: [], temperature: [], vibration: [], current: [], feedSize: [], equipmentLoad: [] },
+                'ROBOT_002': { labels: [], temperature: [], vibration: [], current: [], feedSize: [], equipmentLoad: [] },
+                'ROBOT_003': { labels: [], temperature: [], vibration: [], current: [], feedSize: [], equipmentLoad: [] }
+            };
+            
+            // Energy and ML prediction data
+            const energyData = { labels: [], consumption: [], efficiency: [], predicted: [] };
+            const mlPredictionData = { labels: [], predicted: [], actual: [], confidence: [] };
+            
+            // Store system events and changes for reporting
+            const systemEvents = [];
+            const optimizationHistory = [];
+
+            // Enhanced robot data with more parameters
+            const robots = {
+                'ROBOT_001': { 
+                    id: 'ROBOT_001', 
+                    status: 'operational', 
+                    temperature: 72.5, 
+                    vibration: 0.15, 
+                    pressure: 125.0, 
+                    current: 9.2, 
+                    voltage: 228.0, 
+                    speed: 95.0, 
+                    load: 55.0, 
+                    operatingHours: 2450.5, 
+                    failureProbability: 0.12, 
+                    anomalyScore: -0.05, 
+                    lastMaintenance: '2024-12-15', 
+                    feedSize: 50.2, 
+                    equipmentLoad: 75.5,
+                    energyConsumption: 12.5,
+                    wearLevel: 0.25,
+                    crusherSpeed: 100,
+                    millSpeed: 95,
+                    grindingMediaWear: 0.15
+                },
+                'ROBOT_002': { 
+                    id: 'ROBOT_002', 
+                    status: 'warning', 
+                    temperature: 85.2, 
+                    vibration: 0.28, 
+                    pressure: 118.0, 
+                    current: 11.5, 
+                    voltage: 225.0, 
+                    speed: 88.0, 
+                    load: 68.0, 
+                    operatingHours: 3890.2, 
+                    failureProbability: 0.65, 
+                    anomalyScore: -0.25, 
+                    lastMaintenance: '2024-11-20', 
+                    feedSize: 65.8, 
+                    equipmentLoad: 88.1,
+                    energyConsumption: 18.3,
+                    wearLevel: 0.68,
+                    crusherSpeed: 110,
+                    millSpeed: 92,
+                    grindingMediaWear: 0.55
+                },
+                'ROBOT_003': { 
+                    id: 'ROBOT_003', 
+                    status: 'critical', 
+                    temperature: 95.8, 
+                    vibration: 0.42, 
+                    pressure: 105.0, 
+                    current: 13.8, 
+                    voltage: 218.0, 
+                    speed: 75.0, 
+                    load: 82.0, 
+                    operatingHours: 5240.8, 
+                    failureProbability: 0.89, 
+                    anomalyScore: -0.58, 
+                    lastMaintenance: '2024-10-05', 
+                    feedSize: 72.3, 
+                    equipmentLoad: 95.3,
+                    energyConsumption: 22.7,
+                    wearLevel: 0.89,
+                    crusherSpeed: 120,
+                    millSpeed: 88,
+                    grindingMediaWear: 0.82
+                }
+            };
+
+            // Sample maintenance tasks
+            const maintenanceTasks = [
+                { id: 'TASK_001', robotId: 'ROBOT_003', type: 'emergency', priority: 'critical', title: 'Emergency Repair Required', description: 'Critical temperature and vibration levels detected', scheduledTime: '2025-01-09 14:30', estimatedDuration: 120, requiredParts: ['emergency_repair_kit', 'replacement_parts'] },
+                { id: 'TASK_002', robotId: 'ROBOT_002', type: 'predictive', priority: 'high', title: 'Predictive Maintenance', description: 'Elevated failure probability detected', scheduledTime: '2025-01-09 16:00', estimatedDuration: 90, requiredParts: ['sensors', 'lubricants', 'filters'] },
+                { id: 'TASK_003', robotId: 'ROBOT_001', type: 'preventive', priority: 'medium', title: 'Routine Maintenance', description: 'Scheduled preventive maintenance', scheduledTime: '2025-01-10 09:00', estimatedDuration: 60, requiredParts: ['lubricants', 'filters'] }
+            ];
+
+            // Initialize dashboard
+            function initializeDashboard() {
+                updateRobotGrid();
+                updateTasksList();
+                initializeCharts();
+                updateSystemStatus();
+                updateTimestamp();
+            }
+
+            // Update robot grid
+            function updateRobotGrid() {
+                const robotGrid = document.getElementById('robotGrid');
+                robotGrid.innerHTML = '';
+                Object.values(robots).forEach(robot => {
+                    const robotCard = createRobotCard(robot);
+                    robotGrid.appendChild(robotCard);
+                });
+            }
+
+            // Create robot card
+            function createRobotCard(robot) {
+                const card = document.createElement('div');
+                card.className = 'robot-card';
+                const statusClass = `status-${robot.status}`;
+                const statusText = robot.status.toUpperCase();
+                card.innerHTML = `
+                    <div class="robot-header">
+                        <div class="robot-id">${robot.id}</div>
+                        <div class="robot-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric"><div class="metric-label">Temperature</div><div class="metric-value">${robot.temperature.toFixed(1)}°C</div></div>
+                        <div class="metric"><div class="metric-label">Vibration</div><div class="metric-value">${robot.vibration.toFixed(3)} G</div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric"><div class="metric-label">Feed Size</div><div class="metric-value">${robot.feedSize.toFixed(1)} mm</div></div>
+                        <div class="metric"><div class="metric-label">Equipment Load</div><div class="metric-value">${robot.equipmentLoad.toFixed(1)}%</div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric"><div class="metric-label">Current</div><div class="metric-value">${robot.current.toFixed(1)} A</div></div>
+                        <div class="metric"><div class="metric-label">Speed</div><div class="metric-value">${robot.speed.toFixed(0)} RPM</div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric"><div class="metric-label">Energy Use</div><div class="metric-value">${robot.energyConsumption.toFixed(1)} kW</div></div>
+                        <div class="metric"><div class="metric-label">Wear Level</div><div class="metric-value">${(robot.wearLevel * 100).toFixed(1)}%</div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric"><div class="metric-label">Crusher Speed</div><div class="metric-value">${robot.crusherSpeed.toFixed(0)} RPM</div></div>
+                        <div class="metric"><div class="metric-label">Mill Speed</div><div class="metric-value">${robot.millSpeed.toFixed(0)} RPM</div></div>
+                    </div>
+                    <div class="failure-probability">
+                        <div class="metric-label">ML Predicted Failure Probability</div>
+                        <div class="metric-value">${(robot.failureProbability * 100).toFixed(1)}%</div>
+                        <div class="probability-bar">
+                            <div class="probability-fill" style="width: ${robot.failureProbability * 100}%"></div>
+                        </div>
+                    </div>
+                `;
+                if (robot.status === 'critical') {
+                    card.classList.add('pulse');
+                }
+                return card;
+            }
+
+            // Update tasks list
+            function updateTasksList() {
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+                maintenanceTasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-item';
+                    const priorityClass = `priority-${task.priority}`;
+                    taskItem.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-details">${task.robotId} • ${task.type} • ${task.scheduledTime} • ${task.estimatedDuration}min</div>
+                            <div class="task-details">${task.description}</div>
+                        </div>
+                        <div class="task-actions">
+                            <div class="task-priority ${priorityClass}">${task.priority}</div>
+                            <button class="optimize-btn" onclick="optimizeTask('${task.id}', '${task.robotId}')">
+                                <span>⚡ Optimize with AI</span>
+                            </button>
+                        </div>
+                    `;
+                    tasksList.appendChild(taskItem);
+                });
+            }
+
+            // Initialize charts
+            function initializeCharts() {
+                const sensorCtx = document.getElementById('sensorChart').getContext('2d');
+                sensorChart = new Chart(sensorCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Temperature (°C)', 
+                            data: [], 
+                            borderColor: '#EF4444', 
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }, {
+                            label: 'Vibration (G × 10)', 
+                            data: [], 
+                            borderColor: '#F59E0B', 
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)', 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }, {
+                            label: 'Current (A)', 
+                            data: [], 
+                            borderColor: '#3B82F6', 
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }, {
+                            label: 'Equipment Load (%)', 
+                            data: [], 
+                            borderColor: '#10B981', 
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { 
+                            legend: { 
+                                position: 'top',
+                                labels: {
+                                    color: '#ffffff',
+                                    font: {
+                                        family: 'Inter',
+                                        size: 11
+                                    },
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: 'rgba(79, 70, 229, 0.5)',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            // Adjust vibration display (we multiplied by 10 for visibility)
+                                            if (context.datasetIndex === 1) {
+                                                label += (context.parsed.y / 10).toFixed(3) + ' G';
+                                            } else {
+                                                label += context.parsed.y.toFixed(1);
+                                            }
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { 
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: { family: 'Inter', size: 10 }
+                                },
+                                grid: { 
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                }
+                            },
+                            y: { 
+                                ticks: { 
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: { family: 'Inter', size: 10 }
+                                },
+                                grid: { 
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const failureCtx = document.getElementById('failureChart').getContext('2d');
+                failureChart = new Chart(failureCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(robots),
+                        datasets: [{
+                            label: 'Failure Probability (%)',
+                            data: Object.values(robots).map(r => r.failureProbability * 100),
+                            backgroundColor: Object.values(robots).map(r => {
+                                if (r.failureProbability > 0.8) return 'rgba(239, 68, 68, 0.8)';
+                                if (r.failureProbability > 0.6) return 'rgba(245, 158, 11, 0.8)';
+                                return 'rgba(16, 185, 129, 0.8)';
+                            }),
+                            borderWidth: 0,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: 'rgba(79, 70, 229, 0.5)',
+                                borderWidth: 1,
+                                padding: 12
+                            }
+                        },
+                        scales: { 
+                            x: {
+                                ticks: { 
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: { family: 'Inter', size: 11 }
+                                },
+                                grid: { 
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            },
+                            y: { 
+                                beginAtZero: true, 
+                                max: 100, 
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: { family: 'Inter', size: 10 }
+                                },
+                                grid: { 
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Energy Chart
+                const energyCtx = document.getElementById('energyChart').getContext('2d');
+                energyChart = new Chart(energyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Energy Consumption (kW)',
+                            data: [],
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            yAxisID: 'y'
+                        }, {
+                            label: 'Efficiency (%)',
+                            data: [],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#ffffff', font: { family: 'Inter', size: 11 } }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                type: 'linear',
+                                position: 'left',
+                                ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                position: 'right',
+                                ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: v => v + '%' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+
+                // ML Prediction Chart
+                const mlCtx = document.getElementById('mlPredictionChart').getContext('2d');
+                mlPredictionChart = new Chart(mlCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'ML Predicted Failure Risk',
+                            data: [],
+                            borderColor: '#7C3AED',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        }, {
+                            label: 'Actual Measured Risk',
+                            data: [],
+                            borderColor: '#06B6D4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#ffffff', font: { family: 'Inter', size: 11 } }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { 
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    callback: v => v + '%'
+                                },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update system status cards
+            function updateSystemStatus() {
+                const totalRobots = Object.keys(robots).length;
+                
+                // Real-time IoT sensor simulation
+                iotSensors.oreHardness = 7.2 + (Math.random() - 0.5) * 0.8;
+                iotSensors.moistureContent = 8.5 + (Math.random() - 0.5) * 1.2;
+                
+                // Calculate system-wide energy efficiency
+                const totalEnergyConsumption = Object.values(robots).reduce((sum, r) => sum + r.energyConsumption, 0);
+                const totalCapacity = Object.values(robots).reduce((sum, r) => sum + r.equipmentLoad, 0);
+                const energyEfficiency = (totalCapacity / totalEnergyConsumption) * 0.5; // Simplified calculation
+                
+                document.getElementById('totalRobots').textContent = totalRobots;
+                document.getElementById('oreHardness').innerHTML = `${iotSensors.oreHardness.toFixed(1)} <span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">Mohs</span>`;
+                document.getElementById('moistureContent').innerHTML = `${iotSensors.moistureContent.toFixed(1)}<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">%</span>`;
+                document.getElementById('energyEfficiency').innerHTML = `${energyEfficiency.toFixed(1)}<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">%</span>`;
+                document.getElementById('iotSensors').innerHTML = `${iotSensors.active}<span style="font-size: 0.5em; color: rgba(255,255,255,0.5);">/${iotSensors.total}</span>`;
+            }
+
+            function updateTimestamp() {
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+            }
+            
+            // Advanced ML-based failure prediction algorithm
+            function calculateMLFailureProbability(robot) {
+                // Simulated neural network-style prediction with multiple factors
+                let score = 0;
+                
+                // Temperature factor (weighted heavily)
+                if (robot.temperature > 90) score += 0.35;
+                else if (robot.temperature > 85) score += 0.25;
+                else if (robot.temperature > 80) score += 0.15;
+                else if (robot.temperature > 75) score += 0.08;
+                
+                // Vibration factor (critical indicator)
+                if (robot.vibration > 0.4) score += 0.30;
+                else if (robot.vibration > 0.3) score += 0.20;
+                else if (robot.vibration > 0.25) score += 0.12;
+                else if (robot.vibration > 0.2) score += 0.06;
+                
+                // Current draw anomaly
+                if (robot.current > 13) score += 0.25;
+                else if (robot.current > 11) score += 0.15;
+                else if (robot.current > 10) score += 0.08;
+                
+                // Equipment load stress
+                if (robot.equipmentLoad > 95) score += 0.20;
+                else if (robot.equipmentLoad > 90) score += 0.12;
+                else if (robot.equipmentLoad > 85) score += 0.06;
+                
+                // Wear level progression
+                score += robot.wearLevel * 0.3;
+                
+                // Operating hours factor (degradation over time)
+                const hoursFactor = Math.min(robot.operatingHours / 10000, 1.0) * 0.15;
+                score += hoursFactor;
+                
+                // Ore hardness impact
+                if (iotSensors.oreHardness > 7.5) score += 0.08;
+                
+                // Moisture content impact
+                if (iotSensors.moistureContent > 10) score += 0.05;
+                
+                // Add some random noise to simulate real-world variability
+                score += (Math.random() - 0.5) * 0.05;
+                
+                return Math.min(Math.max(score, 0), 0.98);
+            }
+            
+            // Auto-optimization AI algorithm
+            function performAutoOptimization() {
+                if (!autoOptimizationEnabled || !systemRunning) return;
+                
+                Object.values(robots).forEach(robot => {
+                    // Only optimize robots that are in warning or critical state
+                    if (robot.status === 'warning' || robot.status === 'critical') {
+                        const adjustmentFactor = energyOptimizationTarget === 'efficiency' ? 1.5 :
+                                               energyOptimizationTarget === 'throughput' ? 0.8 :
+                                               energyOptimizationTarget === 'quality' ? 1.2 : 1.0;
+                        
+                        // AI automatically adjusts parameters
+                        if (robot.temperature > 85) {
+                            robot.temperature -= (2 + Math.random() * 3) * adjustmentFactor;
+                            robot.crusherSpeed = Math.max(70, robot.crusherSpeed - 5);
+                        }
+                        
+                        if (robot.vibration > 0.3) {
+                            robot.vibration -= (0.05 + Math.random() * 0.08) * adjustmentFactor;
+                            robot.millSpeed = Math.max(75, robot.millSpeed - 3);
+                        }
+                        
+                        if (robot.equipmentLoad > 90) {
+                            robot.equipmentLoad -= (5 + Math.random() * 8) * adjustmentFactor;
+                            robot.feedSize = Math.max(40, robot.feedSize - 3);
+                        }
+                        
+                        if (robot.current > 11) {
+                            robot.current -= (1 + Math.random() * 1.5) * adjustmentFactor;
+                        }
+                        
+                        robot.energyConsumption = Math.max(10, robot.energyConsumption - 0.5 * adjustmentFactor);
+                        
+                        systemEvents.push({
+                            timestamp: new Date().toLocaleString(),
+                            type: 'AUTO_OPTIMIZATION',
+                            robotId: robot.id,
+                            description: `Auto-optimization applied to ${robot.id} - Target: ${energyOptimizationTarget}`
+                        });
+                    }
+                });
+            }
+            
+            // Simulate real-time data updates
+            function simulateDataUpdate() {
+                if (!systemRunning) return;
+
+                const time = new Date().toLocaleTimeString();
+
+                // Perform auto-optimization if enabled (every 5 updates)
+                if (autoOptimizationEnabled && Math.random() > 0.8) {
+                    performAutoOptimization();
+                }
+
+                // Update energy and ML prediction data
+                const totalEnergy = Object.values(robots).reduce((sum, r) => sum + r.energyConsumption, 0);
+                const avgEfficiency = (Object.values(robots).reduce((sum, r) => sum + (100 - r.wearLevel * 100), 0) / Object.keys(robots).length);
+                
+                energyData.labels.push(time);
+                energyData.consumption.push(totalEnergy);
+                energyData.efficiency.push(avgEfficiency);
+                
+                if (energyData.labels.length > 20) {
+                    energyData.labels.shift();
+                    energyData.consumption.shift();
+                    energyData.efficiency.shift();
+                }
+
+                Object.values(robots).forEach(robot => {
+                    const previousStatus = robot.status;
+                    
+                    // Simulate sensor readings with IoT-style variations
+                    robot.temperature += (Math.random() - 0.5) * 3 - (crusherSpeed > 100 ? 0.5 : 0);
+                    robot.vibration += (Math.random() - 0.5) * 0.03 - (millRotationSpeed > 100 ? 0.01 : 0);
+                    robot.current += (Math.random() - 0.5) * 0.8;
+                    robot.operatingHours += 0.05;
+                    robot.feedSize += (Math.random() - 0.5) * 0.8 - (grindingMediaSize > 60 ? 0.2 : 0);
+                    robot.equipmentLoad += (Math.random() - 0.5) * 2;
+                    robot.energyConsumption += (Math.random() - 0.5) * 0.5;
+                    robot.wearLevel += 0.0001;
+                    
+                    // Apply equipment control parameters effect
+                    robot.crusherSpeed = crusherSpeed + (Math.random() - 0.5) * 5;
+                    robot.millSpeed = millRotationSpeed + (Math.random() - 0.5) * 3;
+                    robot.grindingMediaWear += 0.0001;
+                    
+                    // Ore hardness and moisture affect operations
+                    if (iotSensors.oreHardness > 7.5) {
+                        robot.temperature += 1;
+                        robot.vibration += 0.01;
+                        robot.energyConsumption += 0.3;
+                    }
+                    
+                    if (iotSensors.moistureContent > 9) {
+                        robot.feedSize -= 0.5;
+                        robot.equipmentLoad += 1;
+                    }
+
+                    // Use advanced ML algorithm for failure prediction
+                    robot.failureProbability = calculateMLFailureProbability(robot);
+
+                    // Update status based on ML prediction
+                    if (robot.failureProbability > 0.8) robot.status = 'critical';
+                    else if (robot.failureProbability > 0.6) robot.status = 'warning';
+                    else robot.status = 'operational';
+                    
+                    // Check if robot just became critical and doesn't have an active task
+                    if (robot.status === 'critical' && previousStatus !== 'critical') {
+                        const existingTask = maintenanceTasks.find(t => t.robotId === robot.id);
+                        if (!existingTask) {
+                            // Create a new emergency maintenance task
+                            const newTask = {
+                                id: `TASK_${Date.now()}_${robot.id}`,
+                                robotId: robot.id,
+                                type: 'emergency',
+                                priority: 'critical',
+                                title: 'ML-Detected Critical State',
+                                description: `AI model detected critical failure probability: ${(robot.failureProbability * 100).toFixed(1)}%`,
+                                scheduledTime: new Date().toLocaleString(),
+                                estimatedDuration: 180,
+                                requiredParts: ['AI_optimization', 'parameter_adjustment', 'wear_replacement']
+                            };
+                            maintenanceTasks.push(newTask);
+                            updateTasksList();
+                            showAlert(`⚠️ ML Model detected critical state for ${robot.id}`, 'danger');
+                            systemEvents.push({
+                                timestamp: new Date().toLocaleString(),
+                                type: 'ML_CRITICAL_ALERT',
+                                robotId: robot.id,
+                                description: `ML Model: ${robot.id} entered critical state - Failure probability: ${(robot.failureProbability * 100).toFixed(1)}%`
+                            });
+                        }
+                    }
+                    
+                    // Store data for each robot
+                    const robotData = robotChartData[robot.id];
+                    robotData.labels.push(time);
+                    robotData.temperature.push(robot.temperature);
+                    robotData.vibration.push(robot.vibration * 10); // Multiply by 10 for better visibility
+                    robotData.current.push(robot.current);
+                    robotData.feedSize.push(robot.feedSize);
+                    robotData.equipmentLoad.push(robot.equipmentLoad);
+                    
+                    // Keep only last 15 data points
+                    if (robotData.labels.length > 15) {
+                        robotData.labels.shift();
+                        robotData.temperature.shift();
+                        robotData.vibration.shift();
+                        robotData.current.shift();
+                        robotData.feedSize.shift();
+                        robotData.equipmentLoad.shift();
+                    }
+                });
+
+                // Update ML prediction chart
+                const avgActualRisk = Object.values(robots).reduce((sum, r) => sum + r.failureProbability * 100, 0) / Object.keys(robots).length;
+                const mlPredictedRisk = avgActualRisk + (Math.random() - 0.5) * 5; // ML prediction with slight variance
+                
+                mlPredictionData.labels.push(time);
+                mlPredictionData.predicted.push(mlPredictedRisk);
+                mlPredictionData.actual.push(avgActualRisk);
+                
+                if (mlPredictionData.labels.length > 20) {
+                    mlPredictionData.labels.shift();
+                    mlPredictionData.predicted.shift();
+                    mlPredictionData.actual.shift();
+                }
+
+                // Update sensor chart with selected robot's data
+                if (sensorChart) {
+                    const selectedData = robotChartData[selectedRobotId];
+                    sensorChart.data.labels = selectedData.labels;
+                    sensorChart.data.datasets[0].data = selectedData.temperature;
+                    sensorChart.data.datasets[1].data = selectedData.vibration;
+                    sensorChart.data.datasets[2].data = selectedData.current;
+                    sensorChart.data.datasets[3].data = selectedData.equipmentLoad;
+                    sensorChart.update('none'); // Update without animation for smoother performance
+                }
+
+                // Update failure chart
+                if (failureChart) {
+                    failureChart.data.datasets[0].data = Object.values(robots).map(r => r.failureProbability * 100);
+                    failureChart.data.datasets[0].backgroundColor = Object.values(robots).map(r => {
+                        if (r.failureProbability > 0.8) return 'rgba(239, 68, 68, 0.8)';
+                        if (r.failureProbability > 0.6) return 'rgba(245, 158, 11, 0.8)';
+                        return 'rgba(16, 185, 129, 0.8)';
+                    });
+                    failureChart.update('none');
+                }
+
+                // Update energy chart
+                if (energyChart) {
+                    energyChart.data.labels = energyData.labels;
+                    energyChart.data.datasets[0].data = energyData.consumption;
+                    energyChart.data.datasets[1].data = energyData.efficiency;
+                    energyChart.update('none');
+                }
+
+                // Update ML prediction chart
+                if (mlPredictionChart) {
+                    mlPredictionChart.data.labels = mlPredictionData.labels;
+                    mlPredictionChart.data.datasets[0].data = mlPredictionData.predicted;
+                    mlPredictionChart.data.datasets[1].data = mlPredictionData.actual;
+                    mlPredictionChart.update('none');
+                }
+
+                updateRobotGrid();
+                updateSystemStatus();
+                updateTimestamp();
+                checkAlerts();
+                updateDigitalTwin();
+            }
+            
+            // Update Digital Twin in real-time
+            function updateDigitalTwin() {
+                if (!systemRunning || currentSimulationScenario !== 'standard') return;
+                
+                // Calculate real-time metrics from robots
+                const totalEnergy = Object.values(robots).reduce((sum, r) => sum + r.energyConsumption, 0);
+                const avgLoad = Object.values(robots).reduce((sum, r) => sum + r.equipmentLoad, 0) / Object.keys(robots).length;
+                const avgTemp = Object.values(robots).reduce((sum, r) => sum + r.temperature, 0) / Object.keys(robots).length;
+                const avgParticleSize = Object.values(robots).reduce((sum, r) => sum + r.feedSize, 0) / Object.keys(robots).length;
+                const totalThroughput = 245 + (Math.random() - 0.5) * 10;
+                const efficiency = (Object.values(robots).reduce((sum, r) => sum + (100 - r.wearLevel * 100), 0) / Object.keys(robots).length);
+                
+                // Update digital twin displays if elements exist
+                if (document.getElementById('dt-throughput')) {
+                    document.getElementById('dt-throughput').textContent = totalThroughput.toFixed(1) + ' t/h';
+                    document.getElementById('dt-energy').textContent = totalEnergy.toFixed(1) + ' kW';
+                    document.getElementById('dt-efficiency').textContent = efficiency.toFixed(1) + '%';
+                    document.getElementById('dt-particle').textContent = avgParticleSize.toFixed(0) + ' mm';
+                    document.getElementById('dt-load').textContent = avgLoad.toFixed(0) + '%';
+                    document.getElementById('dt-temp').textContent = avgTemp.toFixed(0) + '°C';
+                }
+            }
+            
+            //--- FIX: COMPLETED THIS FUNCTION ---
+            function checkAlerts() {
+                const alertsContainer = document.getElementById('alerts');
+                alertsContainer.innerHTML = '';
+                const alerts = [];
+                
+                Object.values(robots).forEach(robot => {
+                    if (robot.status === 'critical') {
+                        alerts.push({
+                            className: 'alert alert-danger',
+                            text: `CRITICAL ALERT: ${robot.id} requires immediate attention. Failure probability is high!`
+                        });
+                    } else if (robot.status === 'warning') {
+                        alerts.push({
+                            className: 'alert alert-warning',
+                            text: `WARNING: ${robot.id} is showing signs of potential failure.`
+                        });
+                    }
+                });
+                
+                // Only show latest 3 alerts
+                const alertsToShow = alerts.slice(-3);
+                alertsToShow.forEach(alert => {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = alert.className;
+                    alertDiv.textContent = alert.text;
+                    alertsContainer.appendChild(alertDiv);
+                });
+            }
+
+            // --- FIX: ADDED MISSING CONTROL FUNCTIONS ---
+            window.startSystem = function() {
+                if (systemRunning) return;
+                systemRunning = true;
+                document.getElementById('systemStatus').innerHTML = '🟢 ONLINE';
+                updateInterval = setInterval(simulateDataUpdate, 1000); // Update every 1 second
+                showAlert('System started successfully.', 'success');
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'SYSTEM_START',
+                    description: 'Predictive maintenance system started'
+                });
+            }
+
+            window.stopSystem = function() {
+                if (!systemRunning) return;
+                systemRunning = false;
+                document.getElementById('systemStatus').innerHTML = '🔴 OFFLINE';
+                clearInterval(updateInterval);
+                showAlert('System stopped.', 'warning');
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'SYSTEM_STOP',
+                    description: 'Predictive maintenance system stopped'
+                });
+            }
+
+            window.refreshData = function() {
+                if (!systemRunning) {
+                    showAlert('System is not running. Start the system to refresh data.', 'warning');
+                    return;
+                }
+                showAlert('Manual data refresh triggered.', 'success');
+                simulateDataUpdate();
+            }
+
+            window.generateReport = function() {
+                const reportTimestamp = new Date().toLocaleString();
+                const reportDate = new Date().toLocaleDateString();
+                
+                // Calculate statistics
+                const totalOptimizations = optimizationHistory.length;
+                const criticalAlerts = systemEvents.filter(e => e.type === 'CRITICAL_ALERT' || e.type === 'ML_CRITICAL_ALERT').length;
+                const avgFailureProbability = (Object.values(robots).reduce((sum, r) => sum + r.failureProbability, 0) / Object.keys(robots).length * 100).toFixed(1);
+                const totalEnergyConsumption = Object.values(robots).reduce((sum, r) => sum + r.energyConsumption, 0).toFixed(1);
+                const avgEnergyEfficiency = energyData.efficiency.length > 0 ? energyData.efficiency[energyData.efficiency.length - 1].toFixed(1) : 'N/A';
+                const autoOptCount = systemEvents.filter(e => e.type === 'AUTO_OPTIMIZATION').length;
+                
+                // Build comprehensive report
+                let reportContent = `
+╔═══════════════════════════════════════════════════════════════════════════╗
+║          AI-POWERED PREDICTIVE MAINTENANCE SYSTEM                         ║
+║            COMPREHENSIVE INDUSTRIAL ROBOTICS REPORT                       ║
+║                    WITH IOT & ML INTEGRATION                              ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Report Generated: ${reportTimestamp}
+System Status: ${systemRunning ? 'ONLINE ✅' : 'OFFLINE ⭕'}
+Monitoring Duration: Continuous Real-time Analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 EXECUTIVE SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Robots Monitored: ${Object.keys(robots).length}
+Average ML-Predicted Failure Probability: ${avgFailureProbability}%
+Total AI Optimizations Performed: ${totalOptimizations}
+Auto-Optimizations Applied: ${autoOptCount}
+Critical Alerts Issued: ${criticalAlerts}
+Pending Maintenance Tasks: ${maintenanceTasks.length}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔌 IOT SENSOR NETWORK STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Active IoT Sensors: ${iotSensors.active}/${iotSensors.total} (${((iotSensors.active/iotSensors.total)*100).toFixed(1)}%)
+Current Ore Hardness: ${iotSensors.oreHardness.toFixed(2)} Mohs
+Current Moisture Content: ${iotSensors.moistureContent.toFixed(2)}%
+Data Collection Frequency: Real-time (1 Hz)
+Sensor Network Health: ${iotSensors.active === iotSensors.total ? 'OPTIMAL ✅' : 'DEGRADED ⚠️'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ ENERGY EFFICIENCY & OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Energy Consumption: ${totalEnergyConsumption} kW
+System Energy Efficiency: ${avgEnergyEfficiency}%
+Optimization Target: ${energyOptimizationTarget.toUpperCase()}
+Auto-Optimization: ${autoOptimizationEnabled ? 'ENABLED ✅' : 'DISABLED ⭕'}
+
+Equipment Control Parameters:
+• Crusher Speed: ${crusherSpeed} RPM
+• Grinding Media Size: ${grindingMediaSize} mm
+• Mill Rotation Speed: ${millRotationSpeed} RPM
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 ROBOT STATUS OVERVIEW (ML-ENHANCED)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+                Object.values(robots).forEach(robot => {
+                    const statusIcon = robot.status === 'operational' ? '✅' : robot.status === 'warning' ? '⚠️' : '🔴';
+                    reportContent += `
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ${robot.id} ${statusIcon} [${robot.status.toUpperCase()}]
+├─────────────────────────────────────────────────────────────────────────┤
+│ ML-Predicted Failure Probability: ${(robot.failureProbability * 100).toFixed(1)}%
+│ Operating Hours: ${robot.operatingHours.toFixed(1)}h
+│ Wear Level: ${(robot.wearLevel * 100).toFixed(1)}%
+│ Last Maintenance: ${robot.lastMaintenance}
+│
+│ SENSOR READINGS (IoT):
+│ • Temperature: ${robot.temperature.toFixed(1)}°C ${robot.temperature > 85 ? '⚠️ HIGH' : '✓'}
+│ • Vibration: ${robot.vibration.toFixed(3)} G ${robot.vibration > 0.3 ? '⚠️ HIGH' : '✓'}
+│ • Current: ${robot.current.toFixed(1)} A ${robot.current > 11 ? '⚠️ HIGH' : '✓'}
+│ • Speed: ${robot.speed.toFixed(0)} RPM
+│ • Equipment Load: ${robot.equipmentLoad.toFixed(1)}% ${robot.equipmentLoad > 90 ? '⚠️ HIGH' : '✓'}
+│ • Feed Size: ${robot.feedSize.toFixed(1)} mm
+│
+│ ENERGY & PERFORMANCE:
+│ • Energy Consumption: ${robot.energyConsumption.toFixed(1)} kW
+│ • Crusher Speed: ${robot.crusherSpeed.toFixed(0)} RPM
+│ • Mill Speed: ${robot.millSpeed.toFixed(0)} RPM
+│ • Grinding Media Wear: ${(robot.grindingMediaWear * 100).toFixed(1)}%
+└─────────────────────────────────────────────────────────────────────────┘
+`;
+                });
+
+                reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ AI OPTIMIZATION HISTORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+                if (optimizationHistory.length > 0) {
+                    optimizationHistory.forEach((opt, index) => {
+                        reportContent += `
+${index + 1}. OPTIMIZATION EVENT - ${opt.timestamp}
+   Robot: ${opt.robotId}
+   Task ID: ${opt.taskId}
+   
+   BEFORE OPTIMIZATION:
+   • Status: ${opt.preOptimization.status.toUpperCase()}
+   • Failure Probability: ${(opt.preOptimization.failureProbability * 100).toFixed(1)}%
+   • Temperature: ${opt.preOptimization.temperature.toFixed(1)}°C
+   • Vibration: ${opt.preOptimization.vibration.toFixed(3)} G
+   • Equipment Load: ${opt.preOptimization.equipmentLoad.toFixed(1)}%
+   
+   AFTER OPTIMIZATION:
+   • Status: ${opt.postOptimization.status.toUpperCase()}
+   • Failure Probability: ${(opt.postOptimization.failureProbability * 100).toFixed(1)}%
+   • Temperature: ${opt.postOptimization.temperature.toFixed(1)}°C
+   • Vibration: ${opt.postOptimization.vibration.toFixed(3)} G
+   • Equipment Load: ${opt.postOptimization.equipmentLoad.toFixed(1)}%
+   
+   IMPROVEMENTS ACHIEVED:
+   ✓ Temperature Reduced: ${opt.improvements.temperatureReduction}°C
+   ✓ Vibration Reduced: ${opt.improvements.vibrationReduction} G
+   ✓ Current Reduced: ${opt.improvements.currentReduction} A
+   ✓ Equipment Load Reduced: ${opt.improvements.loadReduction}%
+   ✓ Failure Probability Reduced: ${opt.improvements.failureProbabilityReduction}%
+   
+`;
+                    });
+                } else {
+                    reportContent += `
+No manual AI optimizations have been performed yet.
+Auto-optimizations: ${autoOptCount} performed
+`;
+                }
+
+                reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 PENDING MAINTENANCE TASKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+                if (maintenanceTasks.length > 0) {
+                    maintenanceTasks.forEach((task, index) => {
+                        reportContent += `
+${index + 1}. ${task.title} [${task.priority.toUpperCase()}]
+   Robot: ${task.robotId}
+   Type: ${task.type}
+   Scheduled: ${task.scheduledTime}
+   Duration: ${task.estimatedDuration} minutes
+   Description: ${task.description}
+   Required Parts: ${task.requiredParts.join(', ')}
+   
+`;
+                    });
+                } else {
+                    reportContent += `
+✅ No pending maintenance tasks - All systems operational.
+`;
+                }
+
+                reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 SYSTEM EVENT LOG (LAST 30 EVENTS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+                if (systemEvents.length > 0) {
+                    systemEvents.slice(-30).forEach((event, index) => {
+                        const eventIcon = event.type === 'CRITICAL_ALERT' || event.type === 'ML_CRITICAL_ALERT' ? '🔴' : 
+                                        event.type === 'OPTIMIZATION_COMPLETE' ? '✅' : 
+                                        event.type === 'AUTO_OPTIMIZATION' ? '⚡' :
+                                        event.type === 'PARAMETER_ADJUSTMENT' ? '⚙️' :
+                                        event.type === 'SYSTEM_START' ? '🟢' : '⭕';
+                        reportContent += `
+${eventIcon} [${event.timestamp}] ${event.type}
+   ${event.description}
+`;
+                    });
+                } else {
+                    reportContent += `
+No system events recorded yet.
+`;
+                }
+
+                reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈 ML MODEL PERFORMANCE & RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+                const criticalRobots = Object.values(robots).filter(r => r.status === 'critical');
+                const warningRobots = Object.values(robots).filter(r => r.status === 'warning');
+                
+                reportContent += `
+ML Model Accuracy: Simulated (95.3% precision on historical data)
+Prediction Confidence: High
+Feature Importance: Temperature (32%), Vibration (28%), Wear (20%)
+Model Type: Neural Network with Real-time Adaptation
+
+`;
+                
+                if (criticalRobots.length > 0) {
+                    reportContent += `
+🔴 IMMEDIATE ACTION REQUIRED:
+`;
+                    criticalRobots.forEach(r => {
+                        reportContent += `   • ${r.id}: Critical status - Apply AI optimization immediately
+     Predicted downtime risk: ${(r.failureProbability * 100).toFixed(1)}%
+     Recommended action: Emergency maintenance + parameter optimization
+\n`;
+                    });
+                }
+                
+                if (warningRobots.length > 0) {
+                    reportContent += `
+⚠️ PREVENTIVE MAINTENANCE RECOMMENDED:
+`;
+                    warningRobots.forEach(r => {
+                        reportContent += `   • ${r.id}: Warning status - Schedule maintenance within 24 hours
+     Predicted failure window: 24-48 hours
+     Recommended action: Predictive maintenance + monitoring
+\n`;
+                    });
+                }
+                
+                if (criticalRobots.length === 0 && warningRobots.length === 0) {
+                    reportContent += `
+✅ All systems operating within normal parameters.
+   Continue regular monitoring schedule.
+   Auto-optimization ${autoOptimizationEnabled ? 'maintaining optimal performance' : 'disabled - consider enabling'}.
+`;
+                }
+
+                reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 OPTIMIZATION OPPORTUNITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Energy Optimization: ${totalEnergyConsumption > 50 ? 'Consider reducing crusher/mill speeds during low-load periods' : 'Energy usage is optimal'}
+2. Wear Management: ${Object.values(robots).some(r => r.wearLevel > 0.7) ? 'Schedule grinding media replacement for high-wear units' : 'Wear levels acceptable'}
+3. IoT Coverage: ${iotSensors.active === iotSensors.total ? 'All sensors operational' : 'Some sensors offline - check network'}
+4. Auto-Optimization: ${autoOptimizationEnabled ? 'Active and performing well' : 'RECOMMENDATION: Enable for better efficiency'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Report compiled by AI Predictive Maintenance System v3.0
+Industrial Robotics Division | ${reportDate}
+Features: ML Prediction, IoT Integration, Dynamic Process Control, Auto-Optimization
+
+═══════════════════════════════════════════════════════════════════════════
+`;
+
+                // Store report in browser storage
+                localStorage.setItem('lastReport', reportContent);
+                localStorage.setItem('lastReportTimestamp', reportTimestamp);
+                
+                // Log to console
+                console.log(reportContent);
+                
+                // Create downloadable file
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `AI_Predictive_Maintenance_Report_${new Date().toISOString().split('T')[0]}_${Date.now()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showAlert('📊 Comprehensive ML-enhanced report generated and downloaded!', 'success');
+            }
+            
+            function showAlert(message, type) {
+                const alertsContainer = document.getElementById('alerts');
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertsContainer.prepend(alertDiv);
+                setTimeout(() => alertDiv.remove(), 4000);
+            }
+
+            // AI Optimization function for maintenance tasks
+            window.optimizeTask = function(taskId, robotId) {
+                const task = maintenanceTasks.find(t => t.id === taskId);
+                const robot = robots[robotId];
+                
+                if (!task || !robot) {
+                    showAlert('Task or robot not found!', 'danger');
+                    return;
+                }
+                
+                // Show optimization start alert
+                showAlert(`🤖 AI Optimization started for ${robotId}...`, 'success');
+                
+                // Disable the button temporarily
+                event.target.disabled = true;
+                event.target.innerHTML = '<span>⏳ Processing...</span>';
+                
+                // Change robot status to optimizing
+                robot.status = 'optimizing';
+                updateRobotGrid();
+                
+                // Simulate AI optimization process (3 seconds)
+                setTimeout(() => {
+                    // Store pre-optimization state
+                    const preOptimization = {
+                        temperature: robot.temperature,
+                        vibration: robot.vibration,
+                        current: robot.current,
+                        equipmentLoad: robot.equipmentLoad,
+                        failureProbability: robot.failureProbability,
+                        status: robot.status
+                    };
+                    
+                    // AI Algorithm adjusts parameters to optimal levels
+                    robot.temperature = Math.max(65, robot.temperature - 15 - Math.random() * 10);
+                    robot.vibration = Math.max(0.1, robot.vibration - 0.15 - Math.random() * 0.1);
+                    robot.current = Math.max(8, robot.current - 2 - Math.random() * 1);
+                    robot.equipmentLoad = Math.max(60, robot.equipmentLoad - 15 - Math.random() * 10);
+                    robot.feedSize = Math.max(45, robot.feedSize - 5 - Math.random() * 5);
+                    robot.speed = Math.min(100, robot.speed + 5 + Math.random() * 5);
+                    
+                    // Recalculate failure probability based on optimized parameters
+                    let baseProbability = 0.05 + (robot.operatingHours / 50000);
+                    if (robot.temperature > 85) baseProbability += 0.3;
+                    if (robot.vibration > 0.3) baseProbability += 0.25;
+                    if (robot.current > 11) baseProbability += 0.2;
+                    if (robot.equipmentLoad > 90) baseProbability += 0.15;
+                    
+                    robot.failureProbability = Math.max(0.05, baseProbability - 0.3 - Math.random() * 0.2);
+                    
+                    // Update status based on new probability
+                    if (robot.failureProbability > 0.8) robot.status = 'critical';
+                    else if (robot.failureProbability > 0.6) robot.status = 'warning';
+                    else robot.status = 'operational';
+                    
+                    // Record optimization event
+                    optimizationHistory.push({
+                        timestamp: new Date().toLocaleString(),
+                        robotId: robotId,
+                        taskId: taskId,
+                        preOptimization: preOptimization,
+                        postOptimization: {
+                            temperature: robot.temperature,
+                            vibration: robot.vibration,
+                            current: robot.current,
+                            equipmentLoad: robot.equipmentLoad,
+                            failureProbability: robot.failureProbability,
+                            status: robot.status
+                        },
+                        improvements: {
+                            temperatureReduction: (preOptimization.temperature - robot.temperature).toFixed(1),
+                            vibrationReduction: (preOptimization.vibration - robot.vibration).toFixed(3),
+                            currentReduction: (preOptimization.current - robot.current).toFixed(1),
+                            loadReduction: (preOptimization.equipmentLoad - robot.equipmentLoad).toFixed(1),
+                            failureProbabilityReduction: ((preOptimization.failureProbability - robot.failureProbability) * 100).toFixed(1)
+                        }
+                    });
+                    
+                    systemEvents.push({
+                        timestamp: new Date().toLocaleString(),
+                        type: 'OPTIMIZATION_COMPLETE',
+                        robotId: robotId,
+                        description: `AI optimization completed for ${robotId} - Status: ${preOptimization.status} → ${robot.status}`
+                    });
+                    
+                    // Remove the task from the list (task completed)
+                    const taskIndex = maintenanceTasks.findIndex(t => t.id === taskId);
+                    if (taskIndex > -1) {
+                        maintenanceTasks.splice(taskIndex, 1);
+                    }
+                    
+                    // Update UI
+                    updateRobotGrid();
+                    updateTasksList();
+                    updateSystemStatus();
+                    
+                    // Show success message
+                    showAlert(
+                        `✅ AI Optimization complete! ${robotId} status: ${robot.status.toUpperCase()} | Failure probability reduced to ${(robot.failureProbability * 100).toFixed(1)}%`,
+                        'success'
+                    );
+                    
+                    // Update charts if they exist
+                    if (failureChart) {
+                        failureChart.data.datasets[0].data = Object.values(robots).map(r => r.failureProbability * 100);
+                        failureChart.data.datasets[0].backgroundColor = Object.values(robots).map(r => {
+                            if (r.failureProbability > 0.8) return 'rgba(231, 76, 60, 0.8)';
+                            if (r.failureProbability > 0.6) return 'rgba(243, 156, 18, 0.8)';
+                            return 'rgba(46, 204, 113, 0.8)';
+                        });
+                        failureChart.update();
+                    }
+                }, 3000);
+            }
+
+            // Function to select which robot's data to display in the sensor chart
+            window.selectRobot = function(robotId) {
+                selectedRobotId = robotId;
+                
+                // Update active button styling
+                document.querySelectorAll('.robot-selector-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById('btn-' + robotId).classList.add('active');
+                
+                // Update chart title
+                document.getElementById('sensorChartTitle').textContent = `Real-time Sensor Data (${robotId})`;
+                
+                // Update chart with selected robot's data
+                if (sensorChart) {
+                    const selectedData = robotChartData[robotId];
+                    sensorChart.data.labels = selectedData.labels;
+                    sensorChart.data.datasets[0].data = selectedData.temperature;
+                    sensorChart.data.datasets[1].data = selectedData.vibration;
+                    sensorChart.data.datasets[2].data = selectedData.current;
+                    sensorChart.data.datasets[3].data = selectedData.equipmentLoad;
+                    sensorChart.update();
+                }
+                
+                showAlert(`Switched to ${robotId} sensor data`, 'success');
+            }
+
+            // Equipment Control Functions
+            window.updateCrusherSpeed = function(value) {
+                crusherSpeed = parseInt(value);
+                document.getElementById('crusherSpeedValue').textContent = value + ' RPM';
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'PARAMETER_ADJUSTMENT',
+                    description: `Crusher speed adjusted to ${value} RPM`
+                });
+                
+                if (systemRunning) {
+                    showAlert(`⚙️ Crusher speed set to ${value} RPM`, 'success');
+                }
+            }
+
+            window.updateMediaSize = function(value) {
+                grindingMediaSize = parseInt(value);
+                document.getElementById('mediaSizeValue').textContent = value + ' mm';
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'PARAMETER_ADJUSTMENT',
+                    description: `Grinding media size adjusted to ${value} mm`
+                });
+                
+                if (systemRunning) {
+                    showAlert(`⚙️ Grinding media size set to ${value} mm`, 'success');
+                }
+            }
+
+            window.updateMillSpeed = function(value) {
+                millRotationSpeed = parseInt(value);
+                document.getElementById('millSpeedValue').textContent = value + ' RPM';
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'PARAMETER_ADJUSTMENT',
+                    description: `Mill rotation speed adjusted to ${value} RPM`
+                });
+                
+                if (systemRunning) {
+                    showAlert(`⚙️ Mill rotation speed set to ${value} RPM`, 'success');
+                }
+            }
+
+            window.toggleAutoOptimization = function(enabled) {
+                autoOptimizationEnabled = enabled;
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'AUTO_OPTIMIZATION_TOGGLE',
+                    description: `Auto-optimization ${enabled ? 'enabled' : 'disabled'}`
+                });
+                
+                showAlert(
+                    `🤖 AI Auto-Optimization ${enabled ? 'ENABLED' : 'DISABLED'}${!systemRunning ? ' (Start system to activate)' : ''}`, 
+                    enabled ? 'success' : 'warning'
+                );
+            }
+
+            window.setEnergyTarget = function(target) {
+                energyOptimizationTarget = target;
+                
+                const targetNames = {
+                    'balanced': 'Balanced Performance',
+                    'efficiency': 'Maximum Efficiency',
+                    'throughput': 'Maximum Throughput',
+                    'quality': 'Maximum Quality'
+                };
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'ENERGY_TARGET_CHANGE',
+                    description: `Energy optimization target set to: ${targetNames[target]}`
+                });
+                
+                showAlert(`🎯 Target set to: ${targetNames[target]}${!systemRunning ? ' (Start system to apply)' : ''}`, 'success');
+            }
+
+            // Digital Twin & Process Simulation Functions
+            let simulationSpeed = 1;
+            let digitalTwinParams = {
+                feedRate: 100,
+                crusherGap: 25,
+                millFill: 35,
+                oreHardness: 7.2
+            };
+            
+            let scenarioComparisonChart = null;
+            
+            window.updateDigitalTwinParam = function(param, value) {
+                digitalTwinParams[param] = parseFloat(value);
+                document.getElementById(`dt-${param.replace(/([A-Z])/g, '-$1').toLowerCase()}-val`).textContent = value + (
+                    param === 'feedRate' ? '' :
+                    param === 'crusherGap' ? '' :
+                    param === 'millFill' ? '' :
+                    param === 'oreHardness' ? '' : ''
+                );
+                
+                // Recalculate metrics based on parameters
+                recalculateDigitalTwinMetrics();
+                
+                showAlert(`⚙️ ${param} adjusted to ${value}`, 'success');
+            }
+            
+            function recalculateDigitalTwinMetrics() {
+                // Advanced physics-based calculations
+                const feedRate = digitalTwinParams.feedRate;
+                const crusherGap = digitalTwinParams.crusherGap;
+                const millFill = digitalTwinParams.millFill;
+                const oreHardness = digitalTwinParams.oreHardness;
+                
+                // Calculate throughput (affected by feed rate, crusher gap, ore hardness)
+                const throughput = feedRate * (35 / crusherGap) * (9 / oreHardness) * 0.92;
+                
+                // Energy consumption (affected by hardness, fill level, crusher gap)
+                const crusherPower = (feedRate / 100) * (oreHardness / 6) * (20 / crusherGap) * 24;
+                const millPower = (millFill / 30) * (oreHardness / 6) * 29;
+                const totalEnergy = crusherPower + millPower;
+                
+                // Efficiency
+                const efficiency = (throughput / totalEnergy) * 1.6;
+                
+                // Particle size (affected by crusher gap and mill fill)
+                const particle = crusherGap * 1.6 - (millFill / 35) * 5;
+                
+                // Load calculation
+                const load = (feedRate / 100) * 78 + (millFill - 35) * 0.5;
+                
+                // Temperature
+                const temp = 72 + (totalEnergy - 50) * 0.4 + (oreHardness - 7) * 3;
+                
+                // Update displays
+                if (document.getElementById('dt-throughput')) {
+                    document.getElementById('dt-throughput').textContent = throughput.toFixed(1) + ' t/h';
+                    document.getElementById('dt-energy').textContent = totalEnergy.toFixed(1) + ' kW';
+                    document.getElementById('dt-efficiency').textContent = efficiency.toFixed(1) + '%';
+                    document.getElementById('dt-particle').textContent = particle.toFixed(0) + ' mm';
+                    document.getElementById('dt-load').textContent = load.toFixed(0) + '%';
+                    document.getElementById('dt-temp').textContent = temp.toFixed(0) + '°C';
+                    document.getElementById('dt-recovery').textContent = (94.2 - (particle - 40) * 0.2).toFixed(1) + '%';
+                    document.getElementById('dt-vibration').textContent = (0.24 + (load - 78) * 0.003).toFixed(2) + ' G';
+                    document.getElementById('dt-noise').textContent = (78 + (totalEnergy - 50) * 0.2).toFixed(0) + ' dB';
+                    document.getElementById('dt-water').textContent = (12 + (throughput - 245) * 0.02).toFixed(1) + ' m³/h';
+                    
+                    document.getElementById('dt-feed-display').textContent = feedRate.toFixed(0) + ' t/h';
+                    document.getElementById('dt-output-display').textContent = throughput.toFixed(1) + ' t/h';
+                    document.getElementById('crusher-gap-display').textContent = crusherGap + 'mm';
+                    document.getElementById('mill-fill-display').textContent = millFill + '%';
+                    document.getElementById('crusher-power-display').textContent = crusherPower.toFixed(1) + 'kW';
+                    document.getElementById('mill-power-display').textContent = millPower.toFixed(1) + 'kW';
+                    document.getElementById('energy-flow-text').textContent = totalEnergy.toFixed(1) + ' kW';
+                }
+            }
+            
+            window.runSimulationScenario = function(scenario) {
+                currentSimulationScenario = scenario;
+                
+                // Enhanced scenario configurations with more details
+                const scenarios = {
+                    'energy-saving': {
+                        name: 'Energy Saving Mode',
+                        crusherSpeed: 85,
+                        millSpeed: 80,
+                        throughput: 220,
+                        energy: 42.5,
+                        efficiency: 92.1,
+                        particle: 48,
+                        load: 65,
+                        temp: 72,
+                        vibration: 0.18,
+                        noise: 74,
+                        water: 10.5,
+                        recovery: 93.8,
+                        energySavings: '21.2%',
+                        energySavingsValue: '$11,450/month',
+                        throughputChange: '-10.2%',
+                        throughputValue: '220 t/h',
+                        wearReduction: '28.5%',
+                        wearLifetime: '+14 months',
+                        qualityScore: '88/100',
+                        qualityGrade: 'A-',
+                        roi: '$245K/year',
+                        paybackPeriod: '8 months',
+                        risk: 'Low',
+                        riskFactors: 'Minimal disruption',
+                        co2Reduction: '18.4 tons/year',
+                        waterSaved: '1,850 m³/year',
+                        recommendation: 'Energy saving mode reduces consumption by 21% with minimal impact on output. Recommended for off-peak hours or when high throughput is not critical. Expected payback period: 8 months. Significantly reduces carbon footprint and operational costs.'
+                    },
+                    'high-throughput': {
+                        name: 'High Throughput Mode',
+                        crusherSpeed: 115,
+                        millSpeed: 105,
+                        throughput: 285,
+                        energy: 68.2,
+                        efficiency: 81.5,
+                        particle: 38,
+                        load: 92,
+                        temp: 94,
+                        vibration: 0.32,
+                        noise: 84,
+                        water: 14.2,
+                        recovery: 92.5,
+                        energySavings: '-26.8%',
+                        energySavingsValue: '-$14,200/month',
+                        throughputChange: '+16.3%',
+                        throughputValue: '285 t/h',
+                        wearReduction: '-18.2%',
+                        wearLifetime: '-8 months',
+                        qualityScore: '82/100',
+                        qualityGrade: 'B+',
+                        roi: '$180K/year',
+                        paybackPeriod: '12 months',
+                        risk: 'Medium',
+                        riskFactors: 'Higher wear rate',
+                        co2Reduction: '-15.2 tons/year',
+                        waterSaved: '-920 m³/year',
+                        recommendation: 'High throughput mode increases production by 16% but raises energy use and wear. Best for peak demand periods. Monitor temperature closely. Consider 4-hour maximum continuous operation. Requires more frequent maintenance checks.'
+                    },
+                    'wear-reduction': {
+                        name: 'Wear Reduction Mode',
+                        crusherSpeed: 90,
+                        millSpeed: 85,
+                        throughput: 235,
+                        energy: 48.3,
+                        efficiency: 89.7,
+                        particle: 45,
+                        load: 70,
+                        temp: 76,
+                        vibration: 0.19,
+                        noise: 76,
+                        water: 11.2,
+                        recovery: 94.5,
+                        energySavings: '10.3%',
+                        energySavingsValue: '$5,580/month',
+                        throughputChange: '-4.1%',
+                        throughputValue: '235 t/h',
+                        wearReduction: '35.7%',
+                        wearLifetime: '+18 months',
+                        qualityScore: '91/100',
+                        qualityGrade: 'A',
+                        roi: '$320K/year',
+                        paybackPeriod: '6 months',
+                        risk: 'Low',
+                        riskFactors: 'Very stable',
+                        co2Reduction: '9.8 tons/year',
+                        waterSaved: '1,150 m³/year',
+                        recommendation: 'Wear reduction mode extends equipment lifespan by 35% through optimized grinding parameters. Reduces maintenance costs significantly. Ideal for long-term operational strategy with minimal production impact. Best ROI due to reduced maintenance frequency.'
+                    },
+                    'quality-focused': {
+                        name: 'Quality Focused Mode',
+                        crusherSpeed: 95,
+                        millSpeed: 92,
+                        throughput: 240,
+                        energy: 51.2,
+                        efficiency: 88.9,
+                        particle: 35,
+                        load: 75,
+                        temp: 79,
+                        vibration: 0.22,
+                        noise: 77,
+                        water: 11.8,
+                        recovery: 95.8,
+                        energySavings: '4.8%',
+                        energySavingsValue: '$2,590/month',
+                        throughputChange: '-2.0%',
+                        throughputValue: '240 t/h',
+                        wearReduction: '15.3%',
+                        wearLifetime: '+7 months',
+                        qualityScore: '96/100',
+                        qualityGrade: 'A+',
+                        roi: '$285K/year',
+                        paybackPeriod: '7 months',
+                        risk: 'Low',
+                        riskFactors: 'Proven method',
+                        co2Reduction: '5.2 tons/year',
+                        waterSaved: '680 m³/year',
+                        recommendation: 'Quality focused mode produces finer, more consistent particle size distribution. Optimal for premium product lines. Balanced approach with improved product quality and moderate efficiency gains. Higher recovery rate increases product value.'
+                    }
+                };
+                
+                const config = scenarios[scenario];
+                
+                // Update digital twin display with all parameters
+                document.getElementById('crusher-speed-display').textContent = config.crusherSpeed + ' RPM';
+                document.getElementById('mill-speed-display').textContent = config.millSpeed + ' RPM';
+                document.getElementById('dt-throughput').textContent = config.throughput + ' t/h';
+                document.getElementById('dt-energy').textContent = config.energy + ' kW';
+                document.getElementById('dt-efficiency').textContent = config.efficiency + '%';
+                document.getElementById('dt-particle').textContent = config.particle + ' mm';
+                document.getElementById('dt-load').textContent = config.load + '%';
+                document.getElementById('dt-temp').textContent = config.temp + '°C';
+                document.getElementById('dt-vibration').textContent = config.vibration + ' G';
+                document.getElementById('dt-noise').textContent = config.noise + ' dB';
+                document.getElementById('dt-water').textContent = config.water + ' m³/h';
+                document.getElementById('dt-recovery').textContent = config.recovery + '%';
+                document.getElementById('active-scenario').textContent = config.name;
+                
+                // Update enhanced simulation insights
+                document.getElementById('energy-savings').textContent = config.energySavings;
+                document.getElementById('energy-savings-value').textContent = config.energySavingsValue;
+                document.getElementById('throughput-change').textContent = config.throughputChange;
+                document.getElementById('throughput-value').textContent = config.throughputValue;
+                document.getElementById('wear-reduction').textContent = config.wearReduction;
+                document.getElementById('wear-lifetime').textContent = config.wearLifetime;
+                document.getElementById('quality-score').textContent = config.qualityScore;
+                document.getElementById('quality-grade').textContent = config.qualityGrade;
+                document.getElementById('roi-estimate').textContent = config.roi;
+                document.getElementById('payback-period').textContent = config.paybackPeriod;
+                document.getElementById('implementation-risk').textContent = config.risk;
+                document.getElementById('risk-factors').textContent = config.riskFactors;
+                document.getElementById('ai-recommendation').textContent = config.recommendation;
+                document.getElementById('co2-reduction').textContent = config.co2Reduction;
+                document.getElementById('water-saved').textContent = config.waterSaved;
+                
+                // Update twin status
+                document.getElementById('twin-status').textContent = '🟡 SIMULATING';
+                setTimeout(() => {
+                    document.getElementById('twin-status').textContent = '🟢 SYNCED';
+                }, 1500);
+                
+                // Log event
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'DIGITAL_TWIN_SIMULATION',
+                    description: `Simulated ${config.name} scenario - ROI: ${config.roi}, Payback: ${config.paybackPeriod}`
+                });
+                
+                showAlert(`🔄 Digital Twin: Simulating ${config.name}...`, 'success');
+                
+                // Update comparison chart
+                updateScenarioComparisonChart();
+            }
+            
+            function updateScenarioComparisonChart() {
+                const ctx = document.getElementById('scenarioComparisonChart');
+                if (!ctx) return;
+                
+                if (scenarioComparisonChart) {
+                    scenarioComparisonChart.destroy();
+                }
+                
+                scenarioComparisonChart = new Chart(ctx.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Energy Efficiency', 'Throughput', 'Wear Reduction', 'Quality', 'Cost Savings', 'Environmental'],
+                        datasets: [{
+                            label: 'Current Scenario',
+                            data: [85, 75, 65, 80, 70, 75],
+                            borderColor: '#7C3AED',
+                            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { color: 'rgba(255,255,255,0.7)', backdropColor: 'transparent' },
+                                grid: { color: 'rgba(255,255,255,0.1)' },
+                                pointLabels: { color: 'rgba(255,255,255,0.8)', font: { size: 10 } }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#ffffff', font: { size: 11 } } }
+                        }
+                    }
+                });
+            }
+            
+            window.setSimulationSpeed = function(speed) {
+                simulationSpeed = speed;
+                showAlert(`⚡ Simulation speed set to ${speed}x`, 'success');
+            }
+            
+            window.applyToRealSystem = function() {
+                if (!systemRunning) {
+                    showAlert('⚠️ Start the system first before applying digital twin parameters', 'warning');
+                    return;
+                }
+                
+                // Apply current digital twin parameters to real system
+                crusherSpeed = digitalTwinParams.crusherGap * 4;
+                millRotationSpeed = digitalTwinParams.millFill * 2.5;
+                
+                showAlert(`✅ Digital Twin parameters applied to real system! Monitor performance closely.`, 'success');
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'DIGITAL_TWIN_APPLIED',
+                    description: `Applied digital twin configuration to real system - Feed: ${digitalTwinParams.feedRate} t/h, Gap: ${digitalTwinParams.crusherGap}mm`
+                });
+            }
+            
+            window.scheduleImplementation = function() {
+                const scheduleDate = new Date();
+                scheduleDate.setHours(scheduleDate.getHours() + 2);
+                
+                showAlert(`📅 Implementation scheduled for ${scheduleDate.toLocaleString()}. Notification will be sent 30 minutes before.`, 'success');
+                
+                systemEvents.push({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'IMPLEMENTATION_SCHEDULED',
+                    description: `Scheduled digital twin implementation for ${scheduleDate.toLocaleString()}`
+                });
+            }
+            
+            window.toggleComparisonMode = function() {
+                showAlert('📊 Scenario comparison mode - View side-by-side analysis of all scenarios', 'success');
+            }
+            
+            window.exportSimulationReport = function() {
+                const report = `
+DIGITAL TWIN SIMULATION REPORT
+Generated: ${new Date().toLocaleString()}
+Current Scenario: ${currentSimulationScenario}
+
+=== PARAMETERS ===
+Feed Rate: ${digitalTwinParams.feedRate} t/h
+Crusher Gap: ${digitalTwinParams.crusherGap} mm
+Mill Fill Level: ${digitalTwinParams.millFill}%
+Ore Hardness: ${digitalTwinParams.oreHardness} Mohs
+
+=== RESULTS ===
+${document.getElementById('ai-recommendation')?.textContent || 'No active scenario'}
+
+Report saved to downloads.
+`;
+                const blob = new Blob([report], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Digital_Twin_Report_${Date.now()}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showAlert('📥 Simulation report exported successfully!', 'success');
+            }
+            
+            window.resetSimulation = function() {
+                digitalTwinParams = { feedRate: 100, crusherGap: 25, millFill: 35, oreHardness: 7.2 };
+                document.getElementById('dt-feed-rate').value = 100;
+                document.getElementById('dt-crusher-gap').value = 25;
+                document.getElementById('dt-mill-fill').value = 35;
+                document.getElementById('dt-ore-hardness').value = 7.2;
+                recalculateDigitalTwinMetrics();
+                currentSimulationScenario = 'standard';
+                document.getElementById('active-scenario').textContent = 'Standard Operation';
+                showAlert('🔄 Digital Twin reset to default parameters', 'success');
+            }
+
+            // Initialize Digital Twin with standard scenario
+            setTimeout(() => {
+                if (document.getElementById('dt-throughput')) {
+                    recalculateDigitalTwinMetrics();
+                    updateScenarioComparisonChart();
+                }
+            }, 500);
+
+            // ML Models Modal Functions
+            window.openMLModelsModal = function() {
+                document.getElementById('mlModelsModal').classList.add('active');
+                // Start updating ML metrics when modal is open
+                if (!window.mlMetricsInterval) {
+                    window.mlMetricsInterval = setInterval(updateMLMetrics, 2000);
+                }
+                updateMLMetrics(); // Update immediately
+            }
+
+            window.closeMLModelsModal = function() {
+                document.getElementById('mlModelsModal').classList.remove('active');
+                // Stop updating when modal is closed
+                if (window.mlMetricsInterval) {
+                    clearInterval(window.mlMetricsInterval);
+                    window.mlMetricsInterval = null;
+                }
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('mlModelsModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeMLModelsModal();
+                }
+            });
+
+            // Update ML model metrics in real-time
+            function updateMLMetrics() {
+                if (!systemRunning) return;
+
+                // Random Forest Metrics (slight variations to simulate real-time updates)
+                const rfAccuracy = 96.8 + (Math.random() - 0.5) * 0.8;
+                const rfPrecision = 94.2 + (Math.random() - 0.5) * 1.2;
+                const rfRecall = 95.5 + (Math.random() - 0.5) * 1.0;
+                const rfEstimators = 500 + Math.floor(Math.random() * 50);
+                const rfDepth = 25 + Math.floor(Math.random() * 3);
+                const rfSamples = 12450 + Math.floor(Math.random() * 100);
+
+                // LSTM Metrics
+                const lstmAccuracy = 93.4 + (Math.random() - 0.5) * 1.2;
+                const lstmMAE = 0.047 + (Math.random() - 0.5) * 0.01;
+                const lstmConfidence = 91.8 + (Math.random() - 0.5) * 1.5;
+                const lstmUnits = 128;
+                const lstmSequence = 50 + Math.floor(Math.random() * 10);
+                const lstmEpochs = 200 + Math.floor(Math.random() * 20);
+
+                // XGBoost Metrics
+                const xgbAccuracy = 97.3 + (Math.random() - 0.5) * 0.6;
+                const xgbF1 = 96.1 + (Math.random() - 0.5) * 0.8;
+                const xgbAUC = 0.982 + (Math.random() - 0.5) * 0.008;
+                const xgbEstimators = 1000 + Math.floor(Math.random() * 50);
+                const xgbDepth = 8 + Math.floor(Math.random() * 2);
+
+                // Update Random Forest
+                document.getElementById('rf-accuracy').textContent = rfAccuracy.toFixed(1) + '%';
+                document.getElementById('rf-accuracy-bar').style.width = rfAccuracy.toFixed(1) + '%';
+                document.getElementById('rf-precision').textContent = rfPrecision.toFixed(1) + '%';
+                document.getElementById('rf-precision-bar').style.width = rfPrecision.toFixed(1) + '%';
+                document.getElementById('rf-recall').textContent = rfRecall.toFixed(1) + '%';
+                document.getElementById('rf-recall-bar').style.width = rfRecall.toFixed(1) + '%';
+                document.getElementById('rf-estimators').textContent = rfEstimators;
+                document.getElementById('rf-depth').textContent = rfDepth;
+                document.getElementById('rf-samples').textContent = rfSamples.toLocaleString();
+
+                // Update LSTM
+                document.getElementById('lstm-accuracy').textContent = lstmAccuracy.toFixed(1) + '%';
+                document.getElementById('lstm-accuracy-bar').style.width = lstmAccuracy.toFixed(1) + '%';
+                document.getElementById('lstm-mae').textContent = lstmMAE.toFixed(4);
+                document.getElementById('lstm-mae-bar').style.width = ((1 - lstmMAE) * 100).toFixed(1) + '%';
+                document.getElementById('lstm-confidence').textContent = lstmConfidence.toFixed(1) + '%';
+                document.getElementById('lstm-confidence-bar').style.width = lstmConfidence.toFixed(1) + '%';
+                document.getElementById('lstm-units').textContent = lstmUnits;
+                document.getElementById('lstm-sequence').textContent = lstmSequence;
+                document.getElementById('lstm-epochs').textContent = lstmEpochs;
+
+                // Update XGBoost
+                document.getElementById('xgb-accuracy').textContent = xgbAccuracy.toFixed(1) + '%';
+                document.getElementById('xgb-accuracy-bar').style.width = xgbAccuracy.toFixed(1) + '%';
+                document.getElementById('xgb-f1').textContent = xgbF1.toFixed(1) + '%';
+                document.getElementById('xgb-f1-bar').style.width = xgbF1.toFixed(1) + '%';
+                document.getElementById('xgb-auc').textContent = xgbAUC.toFixed(3);
+                document.getElementById('xgb-auc-bar').style.width = (xgbAUC * 100).toFixed(1) + '%';
+                document.getElementById('xgb-estimators').textContent = xgbEstimators;
+                document.getElementById('xgb-depth').textContent = xgbDepth;
+
+                // Real-time Outputs - Calculate based on current robot average
+                const avgFailureProb = Object.values(robots).reduce((sum, r) => sum + r.failureProbability * 100, 0) / Object.keys(robots).length;
+                
+                const rfOutput = avgFailureProb + (Math.random() - 0.5) * 5;
+                const lstmOutput = avgFailureProb + (Math.random() - 0.5) * 6;
+                const xgbOutput = avgFailureProb + (Math.random() - 0.5) * 4;
+                const ensembleOutput = (rfOutput + lstmOutput + xgbOutput) / 3;
+
+                document.getElementById('rf-output').textContent = rfOutput.toFixed(1) + '%';
+                document.getElementById('lstm-output').textContent = lstmOutput.toFixed(1) + '%';
+                document.getElementById('xgb-output').textContent = xgbOutput.toFixed(1) + '%';
+                document.getElementById('ensemble-output').textContent = ensembleOutput.toFixed(1) + '%';
+
+                // Feature importance
+                const features = ['Temp', 'Vib', 'Load', 'Wear', 'Hrs'];
+                const randomFeature = features[Math.floor(Math.random() * features.length)];
+                const importance = 25 + Math.floor(Math.random() * 15);
+                document.getElementById('rf-feature').textContent = `${randomFeature}: ${importance}%`;
+
+                // LSTM Loss
+                const lstmLossValue = 0.0342 + (Math.random() - 0.5) * 0.01;
+                document.getElementById('lstm-loss').textContent = lstmLossValue.toFixed(4);
+
+                // XGBoost Trees
+                const activeTreesCount = 800 + Math.floor(Math.random() * 100);
+                document.getElementById('xgb-trees').textContent = activeTreesCount;
+
+                // Prediction Latency
+                const latency = 10 + Math.floor(Math.random() * 8);
+                document.getElementById('ml-latency').textContent = latency + 'ms';
+            }
+
+            // Make functions globally accessible from HTML onclick
+            initializeDashboard();
+        });
+    </script>
+</body>
+</html>
